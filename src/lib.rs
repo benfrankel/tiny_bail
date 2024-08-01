@@ -45,7 +45,7 @@ macro_rules! r {
             None => {
                 $crate::log_on_bail!($expr);
                 return $return;
-            },
+            }
         }
     };
 
@@ -55,7 +55,7 @@ macro_rules! r {
             None => {
                 $crate::log_on_bail!($expr);
                 return Default::default();
-            },
+            }
         }
     };
 }
@@ -88,7 +88,7 @@ macro_rules! c {
             None => {
                 $crate::log_on_bail!($expr);
                 continue;
-            },
+            }
         }
     };
 }
@@ -103,4 +103,3 @@ macro_rules! cq {
         }
     };
 }
-
