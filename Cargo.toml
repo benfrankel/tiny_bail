@@ -1,0 +1,22 @@
+[package]
+name = "tiny_bail"
+version = "0.1.0"
+authors = ["Ben Frankel"]
+edition = "2021"
+description = "Small but flexible convenience macros for bailing on failure."
+repository = "https://github.com/benfrankel/tiny_bail"
+license = "MIT OR Apache-2.0"
+keywords = ["failure", "error", "macro", "log", "tracing"]
+categories = ["development-tools::debugging", "rust-patterns", "no-std::no-alloc"]
+
+[lints.rust]
+missing_docs = deny
+
+[features]
+# TODO
+
+[dependencies]
+tracing = { version = "0.1", features = ["log"] }
+
+[package.metadata.docs.rs]
+all-features = true
