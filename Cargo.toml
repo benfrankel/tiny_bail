@@ -10,7 +10,7 @@ keywords = ["failure", "error", "macro", "log", "tracing"]
 categories = ["development-tools::debugging", "rust-patterns", "no-std::no-alloc"]
 
 [lints.rust]
-missing_docs = deny
+missing_docs = "deny"
 
 [features]
 # TODO
