@@ -28,7 +28,7 @@
 //!     if let Some(x) = list.last_mut() {
 //!         *x += 1;
 //!     } else {
-//!         warn!("Bailed at src/example.rs:34:18 `list.last_mut()`");
+//!         tracing::warn!("Bailed at src/example.rs:34:18 `list.last_mut()`");
 //!         return;
 //!     }
 //! }
