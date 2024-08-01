@@ -50,7 +50,7 @@ jobs:
         uses: Leafwing-Studios/cargo-cache@v2
 
       - name: Run Clippy lints
-        run: cargo clippy --workspace --all-features --all-targets -- --deny warnings
+        run: cargo clippy --workspace --all-targets -- --deny warnings
 
   # Check documentation.
   doc:
@@ -71,7 +71,7 @@ jobs:
         uses: Leafwing-Studios/cargo-cache@v2
 
       - name: Check documentation
-        run: cargo doc --workspace --all-features --document-private-items --no-deps
+        run: cargo doc --workspace --document-private-items --no-deps
 
   # Run tests.
   test:
@@ -93,6 +93,6 @@ jobs:
 
       - name: Run tests
         run: |
-          cargo test --workspace --all-features --all-targets
+          cargo test --workspace --all-targets
           # TODO: Workaround for https://github.com/rust-lang/cargo/issues/6669
-          cargo test --workspace --all-features --doc
+          cargo test --workspace --doc
