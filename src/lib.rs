@@ -37,7 +37,7 @@
 //! The macros support `bool`, `Option`, and `Result` types out-of-the-box. This can be extended by implementing
 //! the [`Success`] trait for other types.
 //!
-//! You can specify the return value as an optional first argument to the macro, or omit it to default to
+//! You can specify a return value as an optional first argument to the macro, or omit it to default to
 //! `Default::default()`—which even works in functions with no return value.
 
 // Verify that the feature combination is sane.
@@ -69,7 +69,7 @@ pub mod prelude {
     pub use super::{c, cq, or_continue, or_continue_quiet, or_return, or_return_quiet, r, rq};
 }
 
-/// An extension trait for extracting success from failure types.
+/// An extension trait for extracting success from fallible types.
 pub trait Success<T> {
     /// Return the success value, or `None` on failure.
     fn success(self) -> Option<T>;
@@ -112,7 +112,8 @@ macro_rules! set_logger {
             };
         }
 
-        // Workaround from https://github.com/rust-lang/rust/pull/52234.
+        /// Workaround for https://github.com/rust-lang/rust/pull/52234.
+        #[doc(hidden)]
         pub use ___log_on_bail as __log_on_bail;
     };
 }

@@ -41,7 +41,7 @@ fn increment_last(list: &mut [i32]) {
 The macros support `bool`, `Option`, and `Result` types out-of-the-box. This can be extended by implementing
 the [`Success`](https://docs.rs/tiny_bail/latest/tiny_bail/trait.Success.html) trait for other types.
 
-You can specify the return value as an optional first argument to the macro, or omit it to default to
+You can specify a return value as an optional first argument to the macro, or omit it to default to
 `Default::default()`—which even works in functions with no return value.
 
 # License
