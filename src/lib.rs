@@ -42,20 +42,20 @@ macro_rules! __log_on_bail {
 #[macro_export]
 macro_rules! r {
     ($return:expr, $expr:expr $(,)?) => {
-        match $crate::util::macros::Success::success($expr) {
+        match $crate::Success::success($expr) {
             Some(x) => x,
             None => {
-                $crate::log_on_bail!($expr);
+                $crate::__log_on_bail!($expr);
                 return $return;
             }
         }
     };
 
     ($expr:expr $(,)?) => {
-        match $crate::util::macros::Success::success($expr) {
+        match $crate::Success::success($expr) {
             Some(x) => x,
             None => {
-                $crate::log_on_bail!($expr);
+                $crate::__log_on_bail!($expr);
                 return Default::default();
             }
         }
@@ -76,14 +76,14 @@ macro_rules! or_return {
 #[macro_export]
 macro_rules! rq {
     ($return:expr, $expr:expr $(,)?) => {
-        match $crate::util::macros::Success::success($expr) {
+        match $crate::Success::success($expr) {
             Some(x) => x,
             None => return $return,
         }
     };
 
     ($expr:expr $(,)?) => {
-        match $crate::util::macros::Success::success($expr) {
+        match $crate::Success::success($expr) {
             Some(x) => x,
             None => return Default::default(),
         }
@@ -103,10 +103,10 @@ macro_rules! or_return_quiet {
 #[macro_export]
 macro_rules! c {
     ($expr:expr) => {
-        match $crate::util::macros::Success::success($expr) {
+        match $crate::Success::success($expr) {
             Some(x) => x,
             None => {
-                $crate::log_on_bail!($expr);
+                $crate::__log_on_bail!($expr);
                 continue;
             }
         }
@@ -126,7 +126,7 @@ macro_rules! or_continue {
 #[macro_export]
 macro_rules! cq {
     ($expr:expr) => {
-        match $crate::util::macros::Success::success($expr) {
+        match $crate::Success::success($expr) {
             Some(x) => x,
             None => continue,
         }
@@ -140,4 +140,135 @@ macro_rules! or_continue_quiet {
     ($tt:tt) => {
         $crate::cq!($tt);
     };
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn r() {
+        fn unwrap_some() -> usize {
+            r!(Some(5))
+        }
+
+        fn unwrap_none() -> usize {
+            r!(None)
+        }
+
+        fn unwrap_ok() -> usize {
+            r!(Ok::<_, ()>(5))
+        }
+
+        fn unwrap_err() -> usize {
+            r!(Err(()))
+        }
+
+        assert_eq!(unwrap_some(), 5);
+        assert_eq!(unwrap_none(), 0);
+        assert_eq!(unwrap_ok(), 5);
+        assert_eq!(unwrap_err(), 0);
+    }
+
+    #[test]
+    fn rq() {
+        fn unwrap_some() -> usize {
+            rq!(Some(5))
+        }
+
+        fn unwrap_none() -> usize {
+            rq!(None)
+        }
+
+        fn unwrap_ok() -> usize {
+            rq!(Ok::<_, ()>(5))
+        }
+
+        fn unwrap_err() -> usize {
+            rq!(Err(()))
+        }
+
+        assert_eq!(unwrap_some(), 5);
+        assert_eq!(unwrap_none(), 0);
+        assert_eq!(unwrap_ok(), 5);
+        assert_eq!(unwrap_err(), 0);
+    }
+
+    #[test]
+    fn c() {
+        fn unwrap_some() -> usize {
+            let mut val = 3;
+            for _ in 0..1 {
+                val = c!(Some(5));
+            }
+            val
+        }
+
+        fn unwrap_none() -> usize {
+            let mut val = 3;
+            for _ in 0..1 {
+                val = c!(None);
+            }
+            val
+        }
+
+        fn unwrap_ok() -> usize {
+            let mut val = 3;
+            for _ in 0..1 {
+                val = c!(Ok::<_, ()>(5));
+            }
+            val
+        }
+
+        fn unwrap_err() -> usize {
+            let mut val = 3;
+            for _ in 0..1 {
+                val = c!(Err(()));
+            }
+            val
+        }
+
+        assert_eq!(unwrap_some(), 5);
+        assert_eq!(unwrap_none(), 3);
+        assert_eq!(unwrap_ok(), 5);
+        assert_eq!(unwrap_err(), 3);
+    }
+
+    #[test]
+    fn cq() {
+        fn unwrap_some() -> usize {
+            let mut val = 3;
+            for _ in 0..1 {
+                val = cq!(Some(5));
+            }
+            val
+        }
+
+        fn unwrap_none() -> usize {
+            let mut val = 3;
+            for _ in 0..1 {
+                val = cq!(None);
+            }
+            val
+        }
+
+        fn unwrap_ok() -> usize {
+            let mut val = 3;
+            for _ in 0..1 {
+                val = cq!(Ok::<_, ()>(5));
+            }
+            val
+        }
+
+        fn unwrap_err() -> usize {
+            let mut val = 3;
+            for _ in 0..1 {
+                val = cq!(Err(()));
+            }
+            val
+        }
+
+        assert_eq!(unwrap_some(), 5);
+        assert_eq!(unwrap_none(), 3);
+        assert_eq!(unwrap_ok(), 5);
+        assert_eq!(unwrap_err(), 3);
+    }
 }
