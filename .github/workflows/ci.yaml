@@ -50,7 +50,12 @@ jobs:
         uses: Leafwing-Studios/cargo-cache@v2
 
       - name: Run Clippy lints
-        run: cargo clippy --workspace --all-targets -- --deny warnings
+        run: |
+          for backend in '' log tracing; do
+            for level in trace debug info warn error; do
+              cargo clippy --workspace --no-default-features --features "${backend},${level}" --all-targets -- --deny warnings
+            done
+          done
 
   # Check documentation.
   doc:
@@ -71,7 +76,12 @@ jobs:
         uses: Leafwing-Studios/cargo-cache@v2
 
       - name: Check documentation
-        run: cargo doc --workspace --document-private-items --no-deps
+        run: |
+          for backend in '' log tracing; do
+            for level in trace debug info warn error; do
+              cargo doc --workspace --no-default-features --features "${backend},${level}" --document-private-items --no-deps
+            done
+          done
 
   # Run tests.
   test:
@@ -93,6 +103,10 @@ jobs:
 
       - name: Run tests
         run: |
-          cargo test --workspace --all-targets
-          # TODO: Workaround for https://github.com/rust-lang/cargo/issues/6669
-          cargo test --workspace --doc
+          for backend in '' log tracing; do
+            for level in trace debug info warn error; do
+              cargo test --workspace --no-default-features --features "${backend},${level}" --all-targets
+              # TODO: Workaround for https://github.com/rust-lang/cargo/issues/6669
+              cargo test --workspace --no-default-features --features "${backend},${level}" --doc
+            done
+          done
