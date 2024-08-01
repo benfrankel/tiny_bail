@@ -1,9 +1,9 @@
 [package]
 name = "tiny_bail"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Ben Frankel"]
 edition = "2021"
-description = "Small but flexible convenience macros for bailing on failure."
+description = "Small but flexible macros for bailing on failure."
 repository = "https://github.com/benfrankel/tiny_bail"
 license = "MIT OR Apache-2.0"
 keywords = ["failure", "error", "macro", "log", "tracing"]
@@ -19,15 +19,15 @@ missing_docs = "deny"
 [features]
 # Default to `tracing::warn!`.
 default = ["tracing", "warn"]
-# Set the log level to `trace` for bail logs.
+# Set the log level to `trace`.
 trace = []
-# Set the log level to `debug` for bail logs.
+# Set the log level to `debug`.
 debug = []
-# Set the log level to `info` for bail logs.
+# Set the log level to `info`.
 info = []
-# Set the log level to `warn` for bail logs.
+# Set the log level to `warn`.
 warn = []
-# Set the log level to `error` for bail logs.
+# Set the log level to `error`.
 error = []
 
 [dependencies]

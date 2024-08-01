@@ -40,7 +40,18 @@
 //! You can specify a return value as an optional first argument to the macro, or omit it to default to
 //! `Default::default()`—which even works in functions with no return value.
 
-// Verify that the feature combination is sane.
+/// Re-exported macros.
+///
+/// The recommended way to use this crate is to glob import the prelude:
+///
+/// ```rust
+/// use tiny_bail::prelude::*;
+/// ```
+pub mod prelude {
+    pub use super::{c, cq, or_continue, or_continue_quiet, or_return, or_return_quiet, r, rq};
+}
+
+// Verify that the log level feature combination is sane.
 #[cfg(any(
     all(feature = "trace", feature = "debug"),
     all(feature = "trace", feature = "info"),
@@ -55,19 +66,77 @@
 ))]
 compile_error!("multiple log level features set");
 
-#[cfg(all(feature = "log", feature = "tracing"))]
-compile_error!("multiple logging backend features set");
+#[cfg(not(any(
+    feature = "trace",
+    feature = "debug",
+    feature = "info",
+    feature = "warn",
+    feature = "error",
+)))]
+compile_error!("no log level feature set");
 
-/// Re-exported macros.
-///
-/// The recommended way to use this crate is to glob import the prelude:
-///
-/// ```rust
-/// use tiny_bail::prelude::*;
-/// ```
-pub mod prelude {
-    pub use super::{c, cq, or_continue, or_continue_quiet, or_return, or_return_quiet, r, rq};
+// Verify that the log backend feature combination is sane.
+#[cfg(all(feature = "log", feature = "tracing"))]
+compile_error!("multiple log backend features set");
+
+/// Set the log backend to `println`.
+#[doc(hidden)]
+#[cfg(not(any(feature = "log", feature = "tracing")))]
+pub mod __log_backend {
+    pub use std::{
+        println as trace, println as debug, println as info, println as warn, println as error,
+    };
 }
+
+/// Set the log backend to `log`.
+#[doc(hidden)]
+#[cfg(feature = "log")]
+pub mod __log_backend {
+    pub use log::{debug, error, info, trace, warn};
+}
+
+/// Set the log backend to `tracing`.
+#[doc(hidden)]
+#[cfg(feature = "tracing")]
+pub mod __log_backend {
+    pub use tracing::{debug, error, info, trace, warn};
+}
+
+// TODO: Log the actual error value for `Result::Err`? (what if it doesn't impl `Debug`?)
+/// Set the log level.
+macro_rules! set_log_level {
+    ($level:ident) => {
+        /// Log relevant info on bail.
+        #[doc(hidden)]
+        #[macro_export]
+        macro_rules! ___log_on_bail {
+            ($expr:expr) => {
+                $crate::__log_backend::$level!(
+                    "Bailed at {}:{}:{}: `{}`",
+                    file!(),
+                    line!(),
+                    column!(),
+                    stringify!($expr),
+                );
+            };
+        }
+
+        /// Workaround for https://github.com/rust-lang/rust/pull/52234.
+        #[doc(hidden)]
+        pub use ___log_on_bail as __log_on_bail;
+    };
+}
+
+#[cfg(feature = "trace")]
+set_log_level!(trace);
+#[cfg(feature = "debug")]
+set_log_level!(debug);
+#[cfg(feature = "info")]
+set_log_level!(info);
+#[cfg(feature = "warn")]
+set_log_level!(warn);
+#[cfg(feature = "error")]
+set_log_level!(error);
 
 /// An extension trait for extracting success from fallible types.
 pub trait Success<T> {
@@ -92,54 +161,6 @@ impl<T, E> Success<T> for Result<T, E> {
         self.ok()
     }
 }
-
-// TODO: Log the actual error value for `Result::Err`? (what if it doesn't impl `Debug`?)
-/// Set the logger to use on bail.
-macro_rules! set_logger {
-    ($logger:path) => {
-        /// Log relevant information on bail.
-        #[doc(hidden)]
-        #[macro_export]
-        macro_rules! ___log_on_bail {
-            ($expr:expr) => {
-                $logger!(
-                    "Bailed at {}:{}:{}: `{}`",
-                    file!(),
-                    line!(),
-                    column!(),
-                    stringify!($expr),
-                );
-            };
-        }
-
-        /// Workaround for https://github.com/rust-lang/rust/pull/52234.
-        #[doc(hidden)]
-        pub use ___log_on_bail as __log_on_bail;
-    };
-}
-
-#[cfg(all(not(feature = "log"), not(feature = "tracing")))]
-set_logger!(println);
-#[cfg(all(feature = "log", feature = "trace"))]
-set_logger!(log::trace);
-#[cfg(all(feature = "log", feature = "debug"))]
-set_logger!(log::debug);
-#[cfg(all(feature = "log", feature = "info"))]
-set_logger!(log::info);
-#[cfg(all(feature = "log", feature = "warn"))]
-set_logger!(log::warn);
-#[cfg(all(feature = "log", feature = "error"))]
-set_logger!(log::error);
-#[cfg(all(feature = "tracing", feature = "trace"))]
-set_logger!(tracing::trace);
-#[cfg(all(feature = "tracing", feature = "debug"))]
-set_logger!(tracing::debug);
-#[cfg(all(feature = "tracing", feature = "info"))]
-set_logger!(tracing::info);
-#[cfg(all(feature = "tracing", feature = "warn"))]
-set_logger!(tracing::warn);
-#[cfg(all(feature = "tracing", feature = "error"))]
-set_logger!(tracing::error);
 
 /// Unwrap or return with a warning.
 ///
