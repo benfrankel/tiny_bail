@@ -4,7 +4,13 @@
 [![Docs](https://docs.rs/tiny_bail/badge.svg)](https://docs.rs/tiny_bail/latest/tiny_bail/)
 [![License](https://img.shields.io/badge/license-MIT%2FApache-blue.svg)](https://github.com/benfrankel/tiny_bail)
 
-This crate provides four failure-skipping macros:
+Bailing is an error-handling pattern that takes the middle path between `unwrap` and `?`:
+- Compared to `unwrap`: Bail will `return` or `continue` instead of panicking.
+- Compared to `?`: Bail will log or ignore the error instead of propagating it.
+
+The middle path avoids unwanted panics without the ergonomic challenges of propagating errors with `?`.
+
+This crate provides four bailing macro variants:
 [`r!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.r.html),
 [`rq!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.rq.html),
 [`c!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.c.html), and
@@ -14,15 +20,9 @@ This crate provides four failure-skipping macros:
 [`or_continue!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.or_continue.html), and
 [`or_continue_quiet!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.or_continue_quiet.html), respectively.
 
-The macros support both `Option` and `Result` types out-of-the-box. This can be extended by implementing the
-[`Success`](https://docs.rs/tiny_bail/latest/tiny_bail/trait.Success.html) trait for other types.
-
-You can provide a return value as an optional first argument to the macro, or you can omit it to default to
-`Default::default()`—which also works in functions with no return value.
-
-# Example
-
 ```rust
+use tiny_bail::prelude::*;
+
 /// Increment the last number of a list, or warn if it's empty.
 fn increment_last(list: &mut [usize]) {
     // With `r!`:
@@ -32,11 +32,17 @@ fn increment_last(list: &mut [usize]) {
     if let Some(x) = list.last_mut() {
         *x += 1;
     } else {
-        warn!("Bailed at src/foo.rs:34:18 `list.last_mut()`");
+        warn!("Bailed at src/example.rs:34:18 `list.last_mut()`");
         return;
     }
 }
 ```
+
+The macros support `Option` and `Result` types out-of-the-box. This can be extended by implementing the
+[`Success`](https://docs.rs/tiny_bail/latest/tiny_bail/trait.Success.html) trait for other types.
+
+You can specify the return value as an optional first argument to the macro, or omit it to default to
+`Default::default()`—which even works in functions with no return value.
 
 # License
 

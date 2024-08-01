@@ -1,6 +1,12 @@
 //! Tiny failure-skipping macros.
 // TODO: Expand module-level docs.
 
+/// TODO
+pub mod prelude {
+    pub use super::{c, cq, or_continue, or_continue_quiet, or_return, or_return_quiet, r, rq};
+}
+
+// TODO: Impl `Success<()> for bool`
 /// An extension trait for extracting success from failure types.
 pub trait Success<T> {
     /// Return the success value, or `None` on failure.
