@@ -1,5 +1,44 @@
-//! Tiny failure-skipping macros.
-// TODO: Expand module-level docs.
+//! Tiny bailing convenience macros.
+//!
+//! Bailing is an error-handling pattern that takes the middle path between `unwrap` and `?`:
+//! - Compared to `unwrap`: Bail will `return` or `continue` instead of panicking.
+//! - Compared to `?`: Bail will log or ignore the error instead of propagating it.
+//!
+//! The middle path avoids unwanted panics without the ergonomic challenges of propagating errors with `?`.
+//!
+//! This crate provides four bailing macro variants:
+//! [`r!`],
+//! [`rq!`],
+//! [`c!`], and
+//! [`cq!`]; along with their long-form aliases
+//! [`or_return!`],
+//! [`or_return_quiet!`],
+//! [`or_continue!`], and
+//! [`or_continue_quiet!`], respectively.
+//!
+//! ```rust
+//! use tiny_bail::prelude::*;
+//!
+//! /// Increment the last number of a list, or warn if it's empty.
+//! fn increment_last(list: &mut [usize]) {
+//!     // With `r!`:
+//!     *r!(list.last_mut()) += 1;
+//!
+//!     // Without `r!`:
+//!     if let Some(x) = list.last_mut() {
+//!         *x += 1;
+//!     } else {
+//!         warn!("Bailed at src/example.rs:34:18 `list.last_mut()`");
+//!         return;
+//!     }
+//! }
+//! ```
+//!
+//! The macros support `bool`, `Option`, and `Result` types out-of-the-box. This can be extended by implementing
+//! the [`Success`] trait for other types.
+//!
+//! You can specify the return value as an optional first argument to the macro, or omit it to default to
+//! `Default::default()`—which even works in functions with no return value.
 
 /// Re-exported macros.
 ///
