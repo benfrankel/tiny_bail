@@ -10,7 +10,7 @@ Bailing is an error-handling pattern that takes the middle path between `unwrap`
 
 The middle path avoids unwanted panics without the ergonomic challenges of propagating errors with `?`.
 
-This crate provides four bailing macro variants:
+This crate provides four macro variants:
 [`r!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.r.html),
 [`rq!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.rq.html),
 [`c!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.c.html), and
@@ -24,7 +24,7 @@ This crate provides four bailing macro variants:
 use tiny_bail::prelude::*;
 
 /// Increment the last number of a list, or warn if it's empty.
-fn increment_last(list: &mut [usize]) {
+fn increment_last(list: &mut [i32]) {
     // With `r!`:
     *r!(list.last_mut()) += 1;
 
@@ -32,7 +32,7 @@ fn increment_last(list: &mut [usize]) {
     if let Some(x) = list.last_mut() {
         *x += 1;
     } else {
-        tracing::warn!("Bailed at src/example.rs:34:18 `list.last_mut()`");
+        println!("Bailed at src/example.rs:34:18: `list.last_mut()`");
         return;
     }
 }

@@ -6,7 +6,7 @@
 //!
 //! The middle path avoids unwanted panics without the ergonomic challenges of propagating errors with `?`.
 //!
-//! This crate provides four bailing macro variants:
+//! This crate provides four macro variants:
 //! [`r!`],
 //! [`rq!`],
 //! [`c!`], and
@@ -20,7 +20,7 @@
 //! use tiny_bail::prelude::*;
 //!
 //! /// Increment the last number of a list, or warn if it's empty.
-//! fn increment_last(list: &mut [usize]) {
+//! fn increment_last(list: &mut [i32]) {
 //!     // With `r!`:
 //!     *r!(list.last_mut()) += 1;
 //!
@@ -28,7 +28,7 @@
 //!     if let Some(x) = list.last_mut() {
 //!         *x += 1;
 //!     } else {
-//!         tracing::warn!("Bailed at src/example.rs:34:18 `list.last_mut()`");
+//!         println!("Bailed at src/example.rs:34:18: `list.last_mut()`");
 //!         return;
 //!     }
 //! }
@@ -75,23 +75,37 @@ impl<T, E> Success<T> for Result<T, E> {
     }
 }
 
-// TODO: Features to choose between `log` and `tracing`, or no logging at all.
-// TODO: Features to choose the log level.
-// TODO: Log the actual error if it's a `Result::Err`? (what if it doesn't impl `Debug`?)
-/// Log relevant information on bail.
-#[doc(hidden)]
-#[macro_export]
-macro_rules! __log_on_bail {
-    ($expr:expr) => {
-        tracing::warn!(
-            "Bailed at {}:{}:{}: `{}`",
-            file!(),
-            line!(),
-            column!(),
-            stringify!($expr),
-        );
+// TODO: Log the actual error value for `Result::Err`? (what if it doesn't impl `Debug`?)
+/// Set the logger to use on bail.
+macro_rules! set_logger {
+    ($logger:path) => {
+        /// Log relevant information on bail.
+        #[doc(hidden)]
+        #[macro_export]
+        macro_rules! ___log_on_bail {
+            ($expr:expr) => {
+                $logger!(
+                    "Bailed at {}:{}:{}: `{}`",
+                    file!(),
+                    line!(),
+                    column!(),
+                    stringify!($expr),
+                );
+            };
+        }
+
+        // Workaround from https://github.com/rust-lang/rust/pull/52234.
+        pub use ___log_on_bail as __log_on_bail;
     };
 }
+
+// TODO: Features to choose the log level.
+#[cfg(all(not(feature = "log"), not(feature = "tracing")))]
+set_logger!(println);
+#[cfg(all(feature = "log", not(feature = "tracing")))]
+set_logger!(log::warn);
+#[cfg(feature = "tracing")]
+set_logger!(tracing::warn);
 
 /// Unwrap or return with a warning.
 ///
