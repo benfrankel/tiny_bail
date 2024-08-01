@@ -1,16 +1,27 @@
 //! Tiny failure-skipping macros.
 // TODO: Expand module-level docs.
 
-/// TODO
+/// Re-exported macros.
+///
+/// The recommended way to use this crate is to glob import the prelude:
+///
+/// ```rust
+/// use tiny_bail::prelude::*;
+/// ```
 pub mod prelude {
     pub use super::{c, cq, or_continue, or_continue_quiet, or_return, or_return_quiet, r, rq};
 }
 
-// TODO: Impl `Success<()> for bool`
 /// An extension trait for extracting success from failure types.
 pub trait Success<T> {
     /// Return the success value, or `None` on failure.
     fn success(self) -> Option<T>;
+}
+
+impl Success<()> for bool {
+    fn success(self) -> Option<()> {
+        self.then_some(())
+    }
 }
 
 impl<T> Success<T> for Option<T> {
@@ -152,55 +163,100 @@ macro_rules! or_continue_quiet {
 mod tests {
     #[test]
     fn r() {
-        fn unwrap_some() -> usize {
+        fn bail_true() -> usize {
+            let x = r!(true);
+            assert_eq!(x, ());
+            5
+        }
+
+        fn bail_false() -> usize {
+            r!(false);
+            5
+        }
+
+        fn bail_some() -> usize {
             r!(Some(5))
         }
 
-        fn unwrap_none() -> usize {
+        fn bail_none() -> usize {
             r!(None)
         }
 
-        fn unwrap_ok() -> usize {
+        fn bail_ok() -> usize {
             r!(Ok::<_, ()>(5))
         }
 
-        fn unwrap_err() -> usize {
+        fn bail_err() -> usize {
             r!(Err(()))
         }
 
-        assert_eq!(unwrap_some(), 5);
-        assert_eq!(unwrap_none(), 0);
-        assert_eq!(unwrap_ok(), 5);
-        assert_eq!(unwrap_err(), 0);
+        assert_eq!(bail_true(), 5);
+        assert_eq!(bail_false(), 0);
+        assert_eq!(bail_some(), 5);
+        assert_eq!(bail_none(), 0);
+        assert_eq!(bail_ok(), 5);
+        assert_eq!(bail_err(), 0);
     }
 
     #[test]
     fn rq() {
-        fn unwrap_some() -> usize {
+        fn bail_true() -> usize {
+            let x = rq!(true);
+            assert_eq!(x, ());
+            5
+        }
+
+        fn bail_false() -> usize {
+            rq!(false);
+            5
+        }
+
+        fn bail_some() -> usize {
             rq!(Some(5))
         }
 
-        fn unwrap_none() -> usize {
+        fn bail_none() -> usize {
             rq!(None)
         }
 
-        fn unwrap_ok() -> usize {
+        fn bail_ok() -> usize {
             rq!(Ok::<_, ()>(5))
         }
 
-        fn unwrap_err() -> usize {
+        fn bail_err() -> usize {
             rq!(Err(()))
         }
 
-        assert_eq!(unwrap_some(), 5);
-        assert_eq!(unwrap_none(), 0);
-        assert_eq!(unwrap_ok(), 5);
-        assert_eq!(unwrap_err(), 0);
+        assert_eq!(bail_true(), 5);
+        assert_eq!(bail_false(), 0);
+        assert_eq!(bail_some(), 5);
+        assert_eq!(bail_none(), 0);
+        assert_eq!(bail_ok(), 5);
+        assert_eq!(bail_err(), 0);
     }
 
     #[test]
     fn c() {
-        fn unwrap_some() -> usize {
+        fn bail_true() -> usize {
+            let mut val = 3;
+            for _ in 0..1 {
+                let x = c!(true);
+                assert_eq!(x, ());
+                val = 5;
+            }
+            val
+        }
+
+        fn bail_false() -> usize {
+            let mut val = 3;
+            for _ in 0..1 {
+                c!(false);
+                val = 5;
+            }
+            val
+        }
+
+        fn bail_some() -> usize {
             let mut val = 3;
             for _ in 0..1 {
                 val = c!(Some(5));
@@ -208,7 +264,7 @@ mod tests {
             val
         }
 
-        fn unwrap_none() -> usize {
+        fn bail_none() -> usize {
             let mut val = 3;
             for _ in 0..1 {
                 val = c!(None);
@@ -216,7 +272,7 @@ mod tests {
             val
         }
 
-        fn unwrap_ok() -> usize {
+        fn bail_ok() -> usize {
             let mut val = 3;
             for _ in 0..1 {
                 val = c!(Ok::<_, ()>(5));
@@ -224,7 +280,7 @@ mod tests {
             val
         }
 
-        fn unwrap_err() -> usize {
+        fn bail_err() -> usize {
             let mut val = 3;
             for _ in 0..1 {
                 val = c!(Err(()));
@@ -232,15 +288,36 @@ mod tests {
             val
         }
 
-        assert_eq!(unwrap_some(), 5);
-        assert_eq!(unwrap_none(), 3);
-        assert_eq!(unwrap_ok(), 5);
-        assert_eq!(unwrap_err(), 3);
+        assert_eq!(bail_true(), 5);
+        assert_eq!(bail_false(), 3);
+        assert_eq!(bail_some(), 5);
+        assert_eq!(bail_none(), 3);
+        assert_eq!(bail_ok(), 5);
+        assert_eq!(bail_err(), 3);
     }
 
     #[test]
     fn cq() {
-        fn unwrap_some() -> usize {
+        fn bail_true() -> usize {
+            let mut val = 3;
+            for _ in 0..1 {
+                let x = cq!(true);
+                assert_eq!(x, ());
+                val = 5;
+            }
+            val
+        }
+
+        fn bail_false() -> usize {
+            let mut val = 3;
+            for _ in 0..1 {
+                cq!(false);
+                val = 5;
+            }
+            val
+        }
+
+        fn bail_some() -> usize {
             let mut val = 3;
             for _ in 0..1 {
                 val = cq!(Some(5));
@@ -248,7 +325,7 @@ mod tests {
             val
         }
 
-        fn unwrap_none() -> usize {
+        fn bail_none() -> usize {
             let mut val = 3;
             for _ in 0..1 {
                 val = cq!(None);
@@ -256,7 +333,7 @@ mod tests {
             val
         }
 
-        fn unwrap_ok() -> usize {
+        fn bail_ok() -> usize {
             let mut val = 3;
             for _ in 0..1 {
                 val = cq!(Ok::<_, ()>(5));
@@ -264,7 +341,7 @@ mod tests {
             val
         }
 
-        fn unwrap_err() -> usize {
+        fn bail_err() -> usize {
             let mut val = 3;
             for _ in 0..1 {
                 val = cq!(Err(()));
@@ -272,9 +349,11 @@ mod tests {
             val
         }
 
-        assert_eq!(unwrap_some(), 5);
-        assert_eq!(unwrap_none(), 3);
-        assert_eq!(unwrap_ok(), 5);
-        assert_eq!(unwrap_err(), 3);
+        assert_eq!(bail_true(), 5);
+        assert_eq!(bail_false(), 3);
+        assert_eq!(bail_some(), 5);
+        assert_eq!(bail_none(), 3);
+        assert_eq!(bail_ok(), 5);
+        assert_eq!(bail_err(), 3);
     }
 }
