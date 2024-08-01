@@ -1,6 +1,6 @@
 [package]
 name = "tiny_bail"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Ben Frankel"]
 edition = "2021"
 description = "Small but flexible convenience macros for bailing on failure."
@@ -33,6 +33,3 @@ error = []
 [dependencies]
 log = { version = "0.4", optional = true }
 tracing = { version = "0.1", features = ["log"], optional = true }
-
-[package.metadata.docs.rs]
-all-features = true
