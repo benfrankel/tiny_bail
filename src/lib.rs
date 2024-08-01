@@ -93,8 +93,9 @@ macro_rules! __log_on_bail {
     };
 }
 
-// TODO: Explain return value: default, or a provided value.
 /// Unwrap or return with a warning.
+///
+/// Returns `Default::default()` unless an initial argument is provided to return instead.
 #[macro_export]
 macro_rules! r {
     ($return:expr, $expr:expr $(,)?) => {
@@ -118,17 +119,18 @@ macro_rules! r {
     };
 }
 
-/// A long-form alias for [`r!`].
+/// The long-form alias of [`r!`].
 #[doc(alias = "r")]
 #[macro_export]
 macro_rules! or_return {
-    ($tt:tt) => {
-        $crate::r!($tt);
+    ($($tt:tt)*) => {
+        $crate::r!($($tt)*);
     };
 }
 
-// TODO: Explain return value: default, or a provided value.
 /// Unwrap or return quietly.
+///
+/// Returns `Default::default()` unless an initial argument is provided to return instead.
 #[macro_export]
 macro_rules! rq {
     ($return:expr, $expr:expr $(,)?) => {
@@ -146,12 +148,12 @@ macro_rules! rq {
     };
 }
 
-/// A long-form alias for [`rq!`].
+/// The long-form alias of [`rq!`].
 #[doc(alias = "rq")]
 #[macro_export]
 macro_rules! or_return_quiet {
-    ($tt:tt) => {
-        $crate::rq!($tt);
+    ($($tt:tt)*) => {
+        $crate::rq!($($tt)*);
     };
 }
 
@@ -169,12 +171,12 @@ macro_rules! c {
     };
 }
 
-/// A long-form alias for [`c!`].
+/// The long-form alias of [`c!`].
 #[doc(alias = "c")]
 #[macro_export]
 macro_rules! or_continue {
-    ($tt:tt) => {
-        $crate::c!($tt);
+    ($($tt:tt)*) => {
+        $crate::c!($($tt)*);
     };
 }
 
@@ -189,12 +191,12 @@ macro_rules! cq {
     };
 }
 
-/// A long-form alias for [`cq!`].
+/// The long-form alias of [`cq!`].
 #[doc(alias = "cq")]
 #[macro_export]
 macro_rules! or_continue_quiet {
-    ($tt:tt) => {
-        $crate::cq!($tt);
+    ($($tt:tt)*) => {
+        $crate::cq!($($tt)*);
     };
 }
 
