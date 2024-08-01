@@ -17,7 +17,18 @@ categories = [
 missing_docs = "deny"
 
 [features]
-default = ["tracing"]
+# Default to `tracing::warn!`.
+default = ["tracing", "warn"]
+# Set the log level to `trace` for bail logs.
+trace = []
+# Set the log level to `debug` for bail logs.
+debug = []
+# Set the log level to `info` for bail logs.
+info = []
+# Set the log level to `warn` for bail logs.
+warn = []
+# Set the log level to `error` for bail logs.
+error = []
 
 [dependencies]
 log = { version = "0.4", optional = true }

@@ -40,6 +40,24 @@
 //! You can specify the return value as an optional first argument to the macro, or omit it to default to
 //! `Default::default()`—which even works in functions with no return value.
 
+// Verify that the feature combination is sane.
+#[cfg(any(
+    all(feature = "trace", feature = "debug"),
+    all(feature = "trace", feature = "info"),
+    all(feature = "trace", feature = "warn"),
+    all(feature = "trace", feature = "error"),
+    all(feature = "debug", feature = "info"),
+    all(feature = "debug", feature = "warn"),
+    all(feature = "debug", feature = "error"),
+    all(feature = "info", feature = "warn"),
+    all(feature = "info", feature = "error"),
+    all(feature = "warn", feature = "error"),
+))]
+compile_error!("multiple log level features set");
+
+#[cfg(all(feature = "log", feature = "tracing"))]
+compile_error!("multiple logging backend features set");
+
 /// Re-exported macros.
 ///
 /// The recommended way to use this crate is to glob import the prelude:
@@ -99,13 +117,28 @@ macro_rules! set_logger {
     };
 }
 
-// TODO: Features to choose the log level.
 #[cfg(all(not(feature = "log"), not(feature = "tracing")))]
 set_logger!(println);
-#[cfg(all(feature = "log", not(feature = "tracing")))]
+#[cfg(all(feature = "log", feature = "trace"))]
+set_logger!(log::trace);
+#[cfg(all(feature = "log", feature = "debug"))]
+set_logger!(log::debug);
+#[cfg(all(feature = "log", feature = "info"))]
+set_logger!(log::info);
+#[cfg(all(feature = "log", feature = "warn"))]
 set_logger!(log::warn);
-#[cfg(feature = "tracing")]
+#[cfg(all(feature = "log", feature = "error"))]
+set_logger!(log::error);
+#[cfg(all(feature = "tracing", feature = "trace"))]
+set_logger!(tracing::trace);
+#[cfg(all(feature = "tracing", feature = "debug"))]
+set_logger!(tracing::debug);
+#[cfg(all(feature = "tracing", feature = "info"))]
+set_logger!(tracing::info);
+#[cfg(all(feature = "tracing", feature = "warn"))]
 set_logger!(tracing::warn);
+#[cfg(all(feature = "tracing", feature = "error"))]
+set_logger!(tracing::error);
 
 /// Unwrap or return with a warning.
 ///
