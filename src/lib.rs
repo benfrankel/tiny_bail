@@ -205,13 +205,12 @@ mod tests {
     #[test]
     fn r() {
         fn bail_true() -> usize {
-            let x = r!(true);
-            assert_eq!(x, ());
+            let _: () = r!(true);
             5
         }
 
         fn bail_false() -> usize {
-            r!(false);
+            let _: () = r!(false);
             5
         }
 
@@ -220,7 +219,8 @@ mod tests {
         }
 
         fn bail_none() -> usize {
-            r!(None)
+            let _: () = r!(None);
+            5
         }
 
         fn bail_ok() -> usize {
@@ -228,7 +228,8 @@ mod tests {
         }
 
         fn bail_err() -> usize {
-            r!(Err(()))
+            let _: () = r!(Err(()));
+            5
         }
 
         assert_eq!(bail_true(), 5);
@@ -242,13 +243,12 @@ mod tests {
     #[test]
     fn rq() {
         fn bail_true() -> usize {
-            let x = rq!(true);
-            assert_eq!(x, ());
+            let _: () = rq!(true);
             5
         }
 
         fn bail_false() -> usize {
-            rq!(false);
+            let _: () = rq!(false);
             5
         }
 
@@ -257,7 +257,8 @@ mod tests {
         }
 
         fn bail_none() -> usize {
-            rq!(None)
+            let _: () = rq!(None);
+            5
         }
 
         fn bail_ok() -> usize {
@@ -265,7 +266,8 @@ mod tests {
         }
 
         fn bail_err() -> usize {
-            rq!(Err(()))
+            let _: () = rq!(Err(()));
+            5
         }
 
         assert_eq!(bail_true(), 5);
@@ -281,8 +283,7 @@ mod tests {
         fn bail_true() -> usize {
             let mut val = 3;
             for _ in 0..1 {
-                let x = c!(true);
-                assert_eq!(x, ());
+                let _: () = c!(true);
                 val = 5;
             }
             val
@@ -291,7 +292,7 @@ mod tests {
         fn bail_false() -> usize {
             let mut val = 3;
             for _ in 0..1 {
-                c!(false);
+                let _: () = c!(false);
                 val = 5;
             }
             val
@@ -308,7 +309,8 @@ mod tests {
         fn bail_none() -> usize {
             let mut val = 3;
             for _ in 0..1 {
-                val = c!(None);
+                let _: () = c!(None);
+                val = 5;
             }
             val
         }
@@ -324,7 +326,8 @@ mod tests {
         fn bail_err() -> usize {
             let mut val = 3;
             for _ in 0..1 {
-                val = c!(Err(()));
+                let _: () = c!(Err(()));
+                val = 5;
             }
             val
         }
@@ -342,8 +345,7 @@ mod tests {
         fn bail_true() -> usize {
             let mut val = 3;
             for _ in 0..1 {
-                let x = cq!(true);
-                assert_eq!(x, ());
+                let _: () = cq!(true);
                 val = 5;
             }
             val
@@ -352,7 +354,7 @@ mod tests {
         fn bail_false() -> usize {
             let mut val = 3;
             for _ in 0..1 {
-                cq!(false);
+                let _: () = cq!(false);
                 val = 5;
             }
             val
@@ -369,7 +371,8 @@ mod tests {
         fn bail_none() -> usize {
             let mut val = 3;
             for _ in 0..1 {
-                val = cq!(None);
+                let _: () = cq!(None);
+                val = 5;
             }
             val
         }
@@ -385,7 +388,8 @@ mod tests {
         fn bail_err() -> usize {
             let mut val = 3;
             for _ in 0..1 {
-                val = cq!(Err(()));
+                let _: () = cq!(Err(()));
+                val = 5;
             }
             val
         }
