@@ -1,7 +1,9 @@
-// TODO: Module-level documentation.
+//! Tiny failure skipping macros.
+// TODO: Expand module-level docs.
 
 /// An extension trait for extracting success from failure types.
 pub trait Success<T> {
+    /// Return the success value, or `None` on failure.
     fn success(self) -> Option<T>;
 }
 
