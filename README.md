@@ -1,4 +1,4 @@
-# Tiny failure skipping macros
+# Tiny failure-skipping macros
 
 [![Crates.io](https://img.shields.io/crates/v/tiny_bail.svg)](https://crates.io/crates/tiny_bail)
 [![Docs](https://docs.rs/tiny_bail/badge.svg)](https://docs.rs/tiny_bail/latest/tiny_bail/)

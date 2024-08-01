@@ -1,4 +1,4 @@
-//! Tiny failure skipping macros.
+//! Tiny failure-skipping macros.
 // TODO: Expand module-level docs.
 
 /// An extension trait for extracting success from failure types.
@@ -62,6 +62,15 @@ macro_rules! r {
     };
 }
 
+/// A long-form alias for [`r!`].
+#[doc(alias = "r")]
+#[macro_export]
+macro_rules! or_return {
+    ($tt:tt) => {
+        $crate::r!($tt);
+    };
+}
+
 // TODO: Explain return value: default, or a provided value.
 /// Unwrap or return quietly.
 #[macro_export]
@@ -81,6 +90,15 @@ macro_rules! rq {
     };
 }
 
+/// A long-form alias for [`rq!`].
+#[doc(alias = "rq")]
+#[macro_export]
+macro_rules! or_return_quiet {
+    ($tt:tt) => {
+        $crate::rq!($tt);
+    };
+}
+
 /// Unwrap or continue with a warning.
 #[macro_export]
 macro_rules! c {
@@ -95,6 +113,15 @@ macro_rules! c {
     };
 }
 
+/// A long-form alias for [`c!`].
+#[doc(alias = "c")]
+#[macro_export]
+macro_rules! or_continue {
+    ($tt:tt) => {
+        $crate::c!($tt);
+    };
+}
+
 /// Unwrap or continue quietly.
 #[macro_export]
 macro_rules! cq {
@@ -103,5 +130,14 @@ macro_rules! cq {
             Some(x) => x,
             None => continue,
         }
+    };
+}
+
+/// A long-form alias for [`cq!`].
+#[doc(alias = "cq")]
+#[macro_export]
+macro_rules! or_continue_quiet {
+    ($tt:tt) => {
+        $crate::cq!($tt);
     };
 }
