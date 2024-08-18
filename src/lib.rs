@@ -6,15 +6,19 @@
 //!
 //! The middle path avoids unwanted panics without the ergonomic challenges of propagating errors with `?`.
 //!
-//! This crate provides four macro variants:
+//! This crate provides six macro variants:
 //! [`r!`],
 //! [`rq!`],
-//! [`c!`], and
-//! [`cq!`]; along with their long-form aliases
+//! [`c!`],
+//! [`cq!`],
+//! [`b!`], and
+//! [`bq!`]; along with their long-form aliases
 //! [`or_return!`],
 //! [`or_return_quiet!`],
-//! [`or_continue!`], and
-//! [`or_continue_quiet!`], respectively.
+//! [`or_continue!`],
+//! [`or_continue_quiet!`],
+//! [`or_break!`], and
+//! [`or_break_quiet!`], respectively.
 //!
 //! ```rust
 //! use tiny_bail::prelude::*;
@@ -48,7 +52,7 @@
 /// use tiny_bail::prelude::*;
 /// ```
 pub mod prelude {
-    pub use super::{c, cq, or_continue, or_continue_quiet, or_return, or_return_quiet, r, rq};
+    pub use super::{b, bq, or_break, or_break_quiet, c, cq, or_continue, or_continue_quiet, or_return, or_return_quiet, r, rq};
 }
 
 // Verify that the log level feature combination is sane.
@@ -269,43 +273,86 @@ macro_rules! or_continue_quiet {
     };
 }
 
+/// Unwrap or break with a warning.
+#[macro_export]
+macro_rules! b {
+    ($expr:expr $(,)?) => {
+        match $crate::Success::success($expr) {
+            Some(x) => x,
+            None => {
+                $crate::__log_on_bail!($expr);
+                break;
+            }
+        }
+    };
+}
+
+/// The long-form alias of [`b!`].
+#[doc(alias = "b")]
+#[macro_export]
+macro_rules! or_break {
+    ($($tt:tt)*) => {
+        $crate::b!($($tt)*);
+    };
+}
+
+/// Unwrap or break quietly.
+#[macro_export]
+macro_rules! bq {
+    ($expr:expr $(,)?) => {
+        match $crate::Success::success($expr) {
+            Some(x) => x,
+            None => break,
+        }
+    };
+}
+
+/// The long-form alias of [`bq!`].
+#[doc(alias = "bq")]
+#[macro_export]
+macro_rules! or_break_quiet {
+    ($($tt:tt)*) => {
+        $crate::bq!($($tt)*);
+    };
+}
+
 #[cfg(test)]
 mod tests {
     #[test]
     fn r() {
         fn bail_true() -> usize {
             let _: () = r!(true);
-            5
+            9
         }
 
         fn bail_false() -> usize {
             let _: () = r!(false);
-            5
+            9
         }
 
         fn bail_some() -> usize {
-            r!(Some(5))
+            r!(Some(9))
         }
 
         fn bail_none() -> usize {
             let _: () = r!(None);
-            5
+            9
         }
 
         fn bail_ok() -> usize {
-            r!(Ok::<_, ()>(5))
+            r!(Ok::<_, ()>(9))
         }
 
         fn bail_err() -> usize {
             let _: () = r!(Err(()));
-            5
+            9
         }
 
-        assert_eq!(bail_true(), 5);
+        assert_eq!(bail_true(), 9);
         assert_eq!(bail_false(), 0);
-        assert_eq!(bail_some(), 5);
+        assert_eq!(bail_some(), 9);
         assert_eq!(bail_none(), 0);
-        assert_eq!(bail_ok(), 5);
+        assert_eq!(bail_ok(), 9);
         assert_eq!(bail_err(), 0);
     }
 
@@ -313,161 +360,309 @@ mod tests {
     fn rq() {
         fn bail_true() -> usize {
             let _: () = rq!(true);
-            5
+            9
         }
 
         fn bail_false() -> usize {
             let _: () = rq!(false);
-            5
+            9
         }
 
         fn bail_some() -> usize {
-            rq!(Some(5))
+            rq!(Some(9))
         }
 
         fn bail_none() -> usize {
             let _: () = rq!(None);
-            5
+            9
         }
 
         fn bail_ok() -> usize {
-            rq!(Ok::<_, ()>(5))
+            rq!(Ok::<_, ()>(9))
         }
 
         fn bail_err() -> usize {
             let _: () = rq!(Err(()));
-            5
+            9
         }
 
-        assert_eq!(bail_true(), 5);
+        assert_eq!(bail_true(), 9);
         assert_eq!(bail_false(), 0);
-        assert_eq!(bail_some(), 5);
+        assert_eq!(bail_some(), 9);
         assert_eq!(bail_none(), 0);
-        assert_eq!(bail_ok(), 5);
+        assert_eq!(bail_ok(), 9);
         assert_eq!(bail_err(), 0);
     }
 
     #[test]
     fn c() {
         fn bail_true() -> usize {
-            let mut val = 3;
-            for _ in 0..1 {
+            let mut val = 9;
+            for i in 0..3 {
+                val = i + 3;
                 let _: () = c!(true);
-                val = 5;
+                val = i + 6;
             }
             val
         }
 
         fn bail_false() -> usize {
-            let mut val = 3;
-            for _ in 0..1 {
+            let mut val = 9;
+            for i in 0..3 {
+                val = i + 3;
                 let _: () = c!(false);
-                val = 5;
+                val = i + 6;
             }
             val
         }
 
         fn bail_some() -> usize {
-            let mut val = 3;
-            for _ in 0..1 {
-                val = c!(Some(5));
+            let mut val = 9;
+            for i in 0..3 {
+                val = i + 3;
+                val = c!(Some(i + 6));
             }
             val
         }
 
         fn bail_none() -> usize {
-            let mut val = 3;
-            for _ in 0..1 {
+            let mut val = 9;
+            for i in 0..3 {
+                val = i + 3;
                 let _: () = c!(None);
-                val = 5;
+                val = i + 6;
             }
             val
         }
 
         fn bail_ok() -> usize {
-            let mut val = 3;
-            for _ in 0..1 {
-                val = c!(Ok::<_, ()>(5));
+            let mut val = 9;
+            for i in 0..3 {
+                val = i + 3;
+                val = c!(Ok::<_, ()>(i + 6));
             }
             val
         }
 
         fn bail_err() -> usize {
-            let mut val = 3;
-            for _ in 0..1 {
+            let mut val = 9;
+            for i in 0..3 {
+                val = i + 3;
                 let _: () = c!(Err(()));
-                val = 5;
+                val = i + 6;
             }
             val
         }
 
-        assert_eq!(bail_true(), 5);
-        assert_eq!(bail_false(), 3);
-        assert_eq!(bail_some(), 5);
-        assert_eq!(bail_none(), 3);
-        assert_eq!(bail_ok(), 5);
-        assert_eq!(bail_err(), 3);
+        assert_eq!(bail_true(), 8);
+        assert_eq!(bail_false(), 5);
+        assert_eq!(bail_some(), 8);
+        assert_eq!(bail_none(), 5);
+        assert_eq!(bail_ok(), 8);
+        assert_eq!(bail_err(), 5);
     }
 
     #[test]
     fn cq() {
         fn bail_true() -> usize {
-            let mut val = 3;
-            for _ in 0..1 {
+            let mut val = 9;
+            for i in 0..3 {
+                val = i + 3;
                 let _: () = cq!(true);
-                val = 5;
+                val = i + 6;
             }
             val
         }
 
         fn bail_false() -> usize {
-            let mut val = 3;
-            for _ in 0..1 {
+            let mut val = 9;
+            for i in 0..3 {
+                val = i + 3;
                 let _: () = cq!(false);
-                val = 5;
+                val = i + 6;
             }
             val
         }
 
         fn bail_some() -> usize {
-            let mut val = 3;
-            for _ in 0..1 {
-                val = cq!(Some(5));
+            let mut val = 9;
+            for i in 0..3 {
+                val = i + 3;
+                val = cq!(Some(i + 6));
             }
             val
         }
 
         fn bail_none() -> usize {
-            let mut val = 3;
-            for _ in 0..1 {
+            let mut val = 9;
+            for i in 0..3 {
+                val = i + 3;
                 let _: () = cq!(None);
-                val = 5;
+                val = i + 6;
             }
             val
         }
 
         fn bail_ok() -> usize {
-            let mut val = 3;
-            for _ in 0..1 {
-                val = cq!(Ok::<_, ()>(5));
+            let mut val = 9;
+            for i in 0..3 {
+                val = i + 3;
+                val = cq!(Ok::<_, ()>(i + 6));
             }
             val
         }
 
         fn bail_err() -> usize {
-            let mut val = 3;
-            for _ in 0..1 {
+            let mut val = 9;
+            for i in 0..3 {
+                val = i + 3;
                 let _: () = cq!(Err(()));
-                val = 5;
+                val = i + 6;
             }
             val
         }
 
-        assert_eq!(bail_true(), 5);
+        assert_eq!(bail_true(), 8);
+        assert_eq!(bail_false(), 5);
+        assert_eq!(bail_some(), 8);
+        assert_eq!(bail_none(), 5);
+        assert_eq!(bail_ok(), 8);
+        assert_eq!(bail_err(), 5);
+    }
+
+    #[test]
+    fn b() {
+        fn bail_true() -> usize {
+            let mut val = 9;
+            for i in 0..3 {
+                val = i + 3;
+                let _: () = b!(true);
+                val = i + 6;
+            }
+            val
+        }
+
+        fn bail_false() -> usize {
+            let mut val = 9;
+            for i in 0..3 {
+                val = i + 3;
+                let _: () = b!(false);
+                val = i + 6;
+            }
+            val
+        }
+
+        fn bail_some() -> usize {
+            let mut val = 9;
+            for i in 0..3 {
+                val = i + 3;
+                val = b!(Some(i + 6));
+            }
+            val
+        }
+
+        fn bail_none() -> usize {
+            let mut val = 9;
+            for i in 0..3 {
+                val = i + 3;
+                let _: () = b!(None);
+                val = i + 6;
+            }
+            val
+        }
+
+        fn bail_ok() -> usize {
+            let mut val = 9;
+            for i in 0..3 {
+                val = i + 3;
+                val = b!(Ok::<_, ()>(i + 6));
+            }
+            val
+        }
+
+        fn bail_err() -> usize {
+            let mut val = 9;
+            for i in 0..3 {
+                val = i + 3;
+                let _: () = b!(Err(()));
+                val = i + 6;
+            }
+            val
+        }
+
+        assert_eq!(bail_true(), 8);
         assert_eq!(bail_false(), 3);
-        assert_eq!(bail_some(), 5);
+        assert_eq!(bail_some(), 8);
         assert_eq!(bail_none(), 3);
-        assert_eq!(bail_ok(), 5);
+        assert_eq!(bail_ok(), 8);
+        assert_eq!(bail_err(), 3);
+    }
+
+    #[test]
+    fn bq() {
+        fn bail_true() -> usize {
+            let mut val = 9;
+            for i in 0..3 {
+                val = i + 3;
+                let _: () = bq!(true);
+                val = i + 6;
+            }
+            val
+        }
+
+        fn bail_false() -> usize {
+            let mut val = 9;
+            for i in 0..3 {
+                val = i + 3;
+                let _: () = bq!(false);
+                val = i + 6;
+            }
+            val
+        }
+
+        fn bail_some() -> usize {
+            let mut val = 9;
+            for i in 0..3 {
+                val = i + 3;
+                val = bq!(Some(i + 6));
+            }
+            val
+        }
+
+        fn bail_none() -> usize {
+            let mut val = 9;
+            for i in 0..3 {
+                val = i + 3;
+                let _: () = bq!(None);
+                val = i + 6;
+            }
+            val
+        }
+
+        fn bail_ok() -> usize {
+            let mut val = 9;
+            for i in 0..3 {
+                val = i + 3;
+                val = bq!(Ok::<_, ()>(i + 6));
+            }
+            val
+        }
+
+        fn bail_err() -> usize {
+            let mut val = 9;
+            for i in 0..3 {
+                val = i + 3;
+                let _: () = bq!(Err(()));
+                val = i + 6;
+            }
+            val
+        }
+
+        assert_eq!(bail_true(), 8);
+        assert_eq!(bail_false(), 3);
+        assert_eq!(bail_some(), 8);
+        assert_eq!(bail_none(), 3);
+        assert_eq!(bail_ok(), 8);
         assert_eq!(bail_err(), 3);
     }
 }

@@ -10,15 +10,19 @@ Bailing is an error-handling pattern that takes the middle path between `unwrap`
 
 The middle path avoids unwanted panics without the ergonomic challenges of propagating errors with `?`.
 
-This crate provides four macro variants:
+This crate provides six macro variants:
 [`r!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.r.html),
 [`rq!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.rq.html),
-[`c!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.c.html), and
-[`cq!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.cq.html); along with their long-form aliases
+[`c!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.c.html),
+[`cq!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.cq.html),
+[`b!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.b.html), and
+[`bq!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.bq.html); along with their long-form aliases
 [`or_return!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.or_return.html),
 [`or_return_quiet!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.or_return_quiet.html),
-[`or_continue!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.or_continue.html), and
-[`or_continue_quiet!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.or_continue_quiet.html), respectively.
+[`or_continue!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.or_continue.html),
+[`or_continue_quiet!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.or_continue_quiet.html),
+[`or_break!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.or_break.html), and
+[`or_break_quiet!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.or_break_quiet.html), respectively.
 
 ```rust
 use tiny_bail::prelude::*;
