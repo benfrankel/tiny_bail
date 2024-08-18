@@ -18,7 +18,7 @@
 //! [`or_continue!`],
 //! [`or_continue_quiet!`],
 //! [`or_break!`], and
-//! [`or_break_quiet!`], respectively.
+//! [`or_break_quiet!`].
 //!
 //! ```rust
 //! use tiny_bail::prelude::*;

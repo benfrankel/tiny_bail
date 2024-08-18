@@ -22,7 +22,7 @@ This crate provides six macro variants:
 [`or_continue!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.or_continue.html),
 [`or_continue_quiet!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.or_continue_quiet.html),
 [`or_break!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.or_break.html), and
-[`or_break_quiet!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.or_break_quiet.html), respectively.
+[`or_break_quiet!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.or_break_quiet.html).
 
 ```rust
 use tiny_bail::prelude::*;
