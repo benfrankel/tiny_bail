@@ -1,7 +1,7 @@
 //! Tiny bailing convenience macros.
 //!
 //! Bailing is an error-handling pattern that takes the middle path between `unwrap` and `?`:
-//! - Compared to `unwrap`: Bail will `return` or `continue` instead of panicking.
+//! - Compared to `unwrap`: Bail will `return`, `continue`, or `break` instead of panicking.
 //! - Compared to `?`: Bail will log or ignore the error instead of propagating it.
 //!
 //! The middle path avoids unwanted panics without the ergonomic challenges of propagating errors with `?`.
