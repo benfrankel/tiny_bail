@@ -52,7 +52,10 @@
 /// use tiny_bail::prelude::*;
 /// ```
 pub mod prelude {
-    pub use super::{b, bq, or_break, or_break_quiet, c, cq, or_continue, or_continue_quiet, or_return, or_return_quiet, r, rq};
+    pub use super::{
+        b, bq, c, cq, or_break, or_break_quiet, or_continue, or_continue_quiet, or_return,
+        or_return_quiet, r, rq,
+    };
 }
 
 // Verify that the log level feature combination is sane.
