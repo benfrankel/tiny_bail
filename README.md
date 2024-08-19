@@ -10,43 +10,50 @@ Bailing is an error-handling pattern that takes the middle path between `unwrap`
 
 The middle path avoids unwanted panics without the ergonomic challenges of propagating errors with `?`.
 
+# Getting started
+
 This crate provides six macro variants:
+- [`or_return!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.or_return.html)
+- [`or_return_quiet!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.or_return_quiet.html)
+- [`or_continue!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.or_continue.html)
+- [`or_continue_quiet!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.or_continue_quiet.html)
+- [`or_break!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.or_break.html)
+- [`or_break_quiet!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.or_break_quiet.html)
+
+Along with their tiny aliases:
 [`r!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.r.html),
 [`rq!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.rq.html),
 [`c!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.c.html),
 [`cq!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.cq.html),
 [`b!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.b.html), and
-[`bq!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.bq.html); along with their long-form aliases
-[`or_return!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.or_return.html),
-[`or_return_quiet!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.or_return_quiet.html),
-[`or_continue!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.or_continue.html),
-[`or_continue_quiet!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.or_continue_quiet.html),
-[`or_break!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.or_break.html), and
-[`or_break_quiet!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.or_break_quiet.html).
+[`bq!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.bq.html).
+
+The macros support `bool`, `Option`, and `Result` types out of the box. Implement
+[`Success`](https://docs.rs/tiny_bail/latest/tiny_bail/trait.Success.html) to extend this to other types.
+
+You can specify a return value as an optional first argument to the macro, or omit it to default to
+`Default::default()`—which even works in functions with no return value.
+
+# Example
 
 ```rust
 use tiny_bail::prelude::*;
 
-/// Increment the last number of a list, or warn if it's empty.
-fn increment_last(list: &mut [i32]) {
-    // With `r!`:
-    *r!(list.last_mut()) += 1;
+// With `tiny_bail`:
+fn increment_last(arr: &mut [i32]) {
+    *r!(arr.last_mut()) += 1;
+}
 
-    // Without `r!`:
-    if let Some(x) = list.last_mut() {
+// Without `tiny_bail`:
+fn increment_last_manually(arr: &mut [i32]) {
+    if let Some(x) = arr.last_mut() {
         *x += 1;
     } else {
-        println!("Bailed at src/example.rs:34:18: `list.last_mut()`");
+        println!("Bailed at src/example.rs:34:18: `arr.last_mut()`");
         return;
     }
 }
 ```
-
-The macros support `bool`, `Option`, and `Result` types out-of-the-box. This can be extended by implementing
-the [`Success`](https://docs.rs/tiny_bail/latest/tiny_bail/trait.Success.html) trait for other types.
-
-You can specify a return value as an optional first argument to the macro, or omit it to default to
-`Default::default()`—which even works in functions with no return value.
 
 # License
 

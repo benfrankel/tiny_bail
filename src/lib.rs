@@ -6,55 +6,94 @@
 //!
 //! The middle path avoids unwanted panics without the ergonomic challenges of propagating errors with `?`.
 //!
+//! # Getting started
+//!
 //! This crate provides six macro variants:
-//! [`r!`],
-//! [`rq!`],
-//! [`c!`],
-//! [`cq!`],
-//! [`b!`], and
-//! [`bq!`]; along with their long-form aliases
-//! [`or_return!`],
-//! [`or_return_quiet!`],
-//! [`or_continue!`],
-//! [`or_continue_quiet!`],
-//! [`or_break!`], and
-//! [`or_break_quiet!`].
+//! - [`or_return!`]
+//! - [`or_return_quiet!`]
+//! - [`or_continue!`]
+//! - [`or_continue_quiet!`]
+//! - [`or_break!`]
+//! - [`or_break_quiet!`]
+//!
+//! Along with their tiny aliases:
+//! [`r!`](prelude::r),
+//! [`rq!`](prelude::rq),
+//! [`c!`](prelude::c),
+//! [`cq!`](prelude::cq),
+//! [`b!`](prelude::b), and
+//! [`bq!`](prelude::bq).
+//!
+//! The macros support [`bool`], [`Option`], and [`Result`] types out of the box.
+//! Implement [`Success`] to extend this to other types.
+//!
+//! You can specify a return value as an optional first argument to the macro, or omit it to default to
+//! [`Default::default()`]—which even works in functions with no return value.
+//!
+//! # Example
 //!
 //! ```rust
 //! use tiny_bail::prelude::*;
 //!
-//! /// Increment the last number of a list, or warn if it's empty.
-//! fn increment_last(list: &mut [i32]) {
-//!     // With `r!`:
-//!     *r!(list.last_mut()) += 1;
+//! // With `tiny_bail`:
+//! fn increment_last(arr: &mut [i32]) {
+//!     *r!(arr.last_mut()) += 1;
+//! }
 //!
-//!     // Without `r!`:
-//!     if let Some(x) = list.last_mut() {
+//! // Without `tiny_bail`:
+//! fn increment_last_manually(arr: &mut [i32]) {
+//!     if let Some(x) = arr.last_mut() {
 //!         *x += 1;
 //!     } else {
-//!         println!("Bailed at src/example.rs:34:18: `list.last_mut()`");
+//!         println!("Bailed at src/example.rs:34:18: `arr.last_mut()`");
 //!         return;
 //!     }
 //! }
 //! ```
-//!
-//! The macros support `bool`, `Option`, and `Result` types out-of-the-box. This can be extended by implementing
-//! the [`Success`] trait for other types.
-//!
-//! You can specify a return value as an optional first argument to the macro, or omit it to default to
-//! `Default::default()`—which even works in functions with no return value.
 
-/// Re-exported macros.
+/// Re-exported macros and tiny aliases.
 ///
-/// The recommended way to use this crate is to glob import the prelude:
+/// To omit tiny aliases, glob import [explicit] instead.
+///
+/// # Usage
 ///
 /// ```rust
 /// use tiny_bail::prelude::*;
 /// ```
 pub mod prelude {
+    pub use super::explicit::*;
+
+    /// Tiny alias for [`or_return!`].
+    pub use or_return as r;
+
+    /// Tiny alias for [`or_return_quiet!`].
+    pub use or_return_quiet as rq;
+
+    /// Tiny alias for [`or_continue!`].
+    pub use or_continue as c;
+
+    /// Tiny alias for [`or_continue_quiet!`].
+    pub use or_continue_quiet as cq;
+
+    /// Tiny alias for [`or_break!`].
+    pub use or_break as b;
+
+    /// Tiny alias for [`or_break_quiet!`].
+    pub use or_break_quiet as bq;
+}
+
+/// Re-exported macros.
+///
+/// To include tiny aliases, glob import [prelude] instead.
+///
+/// # Usage
+///
+/// ```
+/// use tiny_bail::explicit::*;
+/// ```
+pub mod explicit {
     pub use super::{
-        b, bq, c, cq, or_break, or_break_quiet, or_continue, or_continue_quiet, or_return,
-        or_return_quiet, r, rq,
+        or_break, or_break_quiet, or_continue, or_continue_quiet, or_return, or_return_quiet,
     };
 }
 
@@ -173,7 +212,7 @@ impl<T, E> Success<T> for Result<T, E> {
 ///
 /// Returns `Default::default()` unless an initial argument is provided to return instead.
 #[macro_export]
-macro_rules! r {
+macro_rules! or_return {
     ($return:expr, $expr:expr $(,)?) => {
         match $crate::Success::success($expr) {
             Some(x) => x,
@@ -195,20 +234,11 @@ macro_rules! r {
     };
 }
 
-/// The long-form alias of [`r!`].
-#[doc(alias = "r")]
-#[macro_export]
-macro_rules! or_return {
-    ($($tt:tt)*) => {
-        $crate::r!($($tt)*);
-    };
-}
-
 /// Unwrap or return quietly.
 ///
 /// Returns `Default::default()` unless an initial argument is provided to return instead.
 #[macro_export]
-macro_rules! rq {
+macro_rules! or_return_quiet {
     ($return:expr, $expr:expr $(,)?) => {
         match $crate::Success::success($expr) {
             Some(x) => x,
@@ -224,18 +254,9 @@ macro_rules! rq {
     };
 }
 
-/// The long-form alias of [`rq!`].
-#[doc(alias = "rq")]
-#[macro_export]
-macro_rules! or_return_quiet {
-    ($($tt:tt)*) => {
-        $crate::rq!($($tt)*);
-    };
-}
-
 /// Unwrap or continue with a warning.
 #[macro_export]
-macro_rules! c {
+macro_rules! or_continue {
     ($expr:expr) => {
         match $crate::Success::success($expr) {
             Some(x) => x,
@@ -247,18 +268,9 @@ macro_rules! c {
     };
 }
 
-/// The long-form alias of [`c!`].
-#[doc(alias = "c")]
-#[macro_export]
-macro_rules! or_continue {
-    ($($tt:tt)*) => {
-        $crate::c!($($tt)*);
-    };
-}
-
 /// Unwrap or continue quietly.
 #[macro_export]
-macro_rules! cq {
+macro_rules! or_continue_quiet {
     ($expr:expr) => {
         match $crate::Success::success($expr) {
             Some(x) => x,
@@ -267,18 +279,9 @@ macro_rules! cq {
     };
 }
 
-/// The long-form alias of [`cq!`].
-#[doc(alias = "cq")]
-#[macro_export]
-macro_rules! or_continue_quiet {
-    ($($tt:tt)*) => {
-        $crate::cq!($($tt)*);
-    };
-}
-
 /// Unwrap or break with a warning.
 #[macro_export]
-macro_rules! b {
+macro_rules! or_break {
     ($expr:expr $(,)?) => {
         match $crate::Success::success($expr) {
             Some(x) => x,
@@ -290,18 +293,9 @@ macro_rules! b {
     };
 }
 
-/// The long-form alias of [`b!`].
-#[doc(alias = "b")]
-#[macro_export]
-macro_rules! or_break {
-    ($($tt:tt)*) => {
-        $crate::b!($($tt)*);
-    };
-}
-
 /// Unwrap or break quietly.
 #[macro_export]
-macro_rules! bq {
+macro_rules! or_break_quiet {
     ($expr:expr $(,)?) => {
         match $crate::Success::success($expr) {
             Some(x) => x,
@@ -310,44 +304,35 @@ macro_rules! bq {
     };
 }
 
-/// The long-form alias of [`bq!`].
-#[doc(alias = "bq")]
-#[macro_export]
-macro_rules! or_break_quiet {
-    ($($tt:tt)*) => {
-        $crate::bq!($($tt)*);
-    };
-}
-
 #[cfg(test)]
 mod tests {
     #[test]
     fn r() {
         fn bail_true() -> usize {
-            let _: () = r!(true);
+            let _: () = or_return!(true);
             9
         }
 
         fn bail_false() -> usize {
-            let _: () = r!(false);
+            let _: () = or_return!(false);
             9
         }
 
         fn bail_some() -> usize {
-            r!(Some(9))
+            or_return!(Some(9))
         }
 
         fn bail_none() -> usize {
-            let _: () = r!(None);
+            let _: () = or_return!(None);
             9
         }
 
         fn bail_ok() -> usize {
-            r!(Ok::<_, ()>(9))
+            or_return!(Ok::<_, ()>(9))
         }
 
         fn bail_err() -> usize {
-            let _: () = r!(Err(()));
+            let _: () = or_return!(Err(()));
             9
         }
 
@@ -362,30 +347,30 @@ mod tests {
     #[test]
     fn rq() {
         fn bail_true() -> usize {
-            let _: () = rq!(true);
+            let _: () = or_return_quiet!(true);
             9
         }
 
         fn bail_false() -> usize {
-            let _: () = rq!(false);
+            let _: () = or_return_quiet!(false);
             9
         }
 
         fn bail_some() -> usize {
-            rq!(Some(9))
+            or_return_quiet!(Some(9))
         }
 
         fn bail_none() -> usize {
-            let _: () = rq!(None);
+            let _: () = or_return_quiet!(None);
             9
         }
 
         fn bail_ok() -> usize {
-            rq!(Ok::<_, ()>(9))
+            or_return_quiet!(Ok::<_, ()>(9))
         }
 
         fn bail_err() -> usize {
-            let _: () = rq!(Err(()));
+            let _: () = or_return_quiet!(Err(()));
             9
         }
 
@@ -403,7 +388,7 @@ mod tests {
             let mut val = 9;
             for i in 0..3 {
                 val = i + 3;
-                let _: () = c!(true);
+                let _: () = or_continue!(true);
                 val = i + 6;
             }
             val
@@ -413,7 +398,7 @@ mod tests {
             let mut val = 9;
             for i in 0..3 {
                 val = i + 3;
-                let _: () = c!(false);
+                let _: () = or_continue!(false);
                 val = i + 6;
             }
             val
@@ -423,7 +408,7 @@ mod tests {
             let mut val = 9;
             for i in 0..3 {
                 val = i + 3;
-                val = c!(Some(i + 6));
+                val = or_continue!(Some(i + 6));
             }
             val
         }
@@ -432,7 +417,7 @@ mod tests {
             let mut val = 9;
             for i in 0..3 {
                 val = i + 3;
-                let _: () = c!(None);
+                let _: () = or_continue!(None);
                 val = i + 6;
             }
             val
@@ -442,7 +427,7 @@ mod tests {
             let mut val = 9;
             for i in 0..3 {
                 val = i + 3;
-                val = c!(Ok::<_, ()>(i + 6));
+                val = or_continue!(Ok::<_, ()>(i + 6));
             }
             val
         }
@@ -451,7 +436,7 @@ mod tests {
             let mut val = 9;
             for i in 0..3 {
                 val = i + 3;
-                let _: () = c!(Err(()));
+                let _: () = or_continue!(Err(()));
                 val = i + 6;
             }
             val
@@ -471,7 +456,7 @@ mod tests {
             let mut val = 9;
             for i in 0..3 {
                 val = i + 3;
-                let _: () = cq!(true);
+                let _: () = or_continue_quiet!(true);
                 val = i + 6;
             }
             val
@@ -481,7 +466,7 @@ mod tests {
             let mut val = 9;
             for i in 0..3 {
                 val = i + 3;
-                let _: () = cq!(false);
+                let _: () = or_continue_quiet!(false);
                 val = i + 6;
             }
             val
@@ -491,7 +476,7 @@ mod tests {
             let mut val = 9;
             for i in 0..3 {
                 val = i + 3;
-                val = cq!(Some(i + 6));
+                val = or_continue_quiet!(Some(i + 6));
             }
             val
         }
@@ -500,7 +485,7 @@ mod tests {
             let mut val = 9;
             for i in 0..3 {
                 val = i + 3;
-                let _: () = cq!(None);
+                let _: () = or_continue_quiet!(None);
                 val = i + 6;
             }
             val
@@ -510,7 +495,7 @@ mod tests {
             let mut val = 9;
             for i in 0..3 {
                 val = i + 3;
-                val = cq!(Ok::<_, ()>(i + 6));
+                val = or_continue_quiet!(Ok::<_, ()>(i + 6));
             }
             val
         }
@@ -519,7 +504,7 @@ mod tests {
             let mut val = 9;
             for i in 0..3 {
                 val = i + 3;
-                let _: () = cq!(Err(()));
+                let _: () = or_continue_quiet!(Err(()));
                 val = i + 6;
             }
             val
@@ -539,7 +524,7 @@ mod tests {
             let mut val = 9;
             for i in 0..3 {
                 val = i + 3;
-                let _: () = b!(true);
+                let _: () = or_break!(true);
                 val = i + 6;
             }
             val
@@ -549,7 +534,7 @@ mod tests {
             let mut val = 9;
             for i in 0..3 {
                 val = i + 3;
-                let _: () = b!(false);
+                let _: () = or_break!(false);
                 val = i + 6;
             }
             val
@@ -559,7 +544,7 @@ mod tests {
             let mut val = 9;
             for i in 0..3 {
                 val = i + 3;
-                val = b!(Some(i + 6));
+                val = or_break!(Some(i + 6));
             }
             val
         }
@@ -568,7 +553,7 @@ mod tests {
             let mut val = 9;
             for i in 0..3 {
                 val = i + 3;
-                let _: () = b!(None);
+                let _: () = or_break!(None);
                 val = i + 6;
             }
             val
@@ -578,7 +563,7 @@ mod tests {
             let mut val = 9;
             for i in 0..3 {
                 val = i + 3;
-                val = b!(Ok::<_, ()>(i + 6));
+                val = or_break!(Ok::<_, ()>(i + 6));
             }
             val
         }
@@ -587,7 +572,7 @@ mod tests {
             let mut val = 9;
             for i in 0..3 {
                 val = i + 3;
-                let _: () = b!(Err(()));
+                let _: () = or_break!(Err(()));
                 val = i + 6;
             }
             val
@@ -607,7 +592,7 @@ mod tests {
             let mut val = 9;
             for i in 0..3 {
                 val = i + 3;
-                let _: () = bq!(true);
+                let _: () = or_break_quiet!(true);
                 val = i + 6;
             }
             val
@@ -617,7 +602,7 @@ mod tests {
             let mut val = 9;
             for i in 0..3 {
                 val = i + 3;
-                let _: () = bq!(false);
+                let _: () = or_break_quiet!(false);
                 val = i + 6;
             }
             val
@@ -627,7 +612,7 @@ mod tests {
             let mut val = 9;
             for i in 0..3 {
                 val = i + 3;
-                val = bq!(Some(i + 6));
+                val = or_break_quiet!(Some(i + 6));
             }
             val
         }
@@ -636,7 +621,7 @@ mod tests {
             let mut val = 9;
             for i in 0..3 {
                 val = i + 3;
-                let _: () = bq!(None);
+                let _: () = or_break_quiet!(None);
                 val = i + 6;
             }
             val
@@ -646,7 +631,7 @@ mod tests {
             let mut val = 9;
             for i in 0..3 {
                 val = i + 3;
-                val = bq!(Ok::<_, ()>(i + 6));
+                val = or_break_quiet!(Ok::<_, ()>(i + 6));
             }
             val
         }
@@ -655,7 +640,7 @@ mod tests {
             let mut val = 9;
             for i in 0..3 {
                 val = i + 3;
-                let _: () = bq!(Err(()));
+                let _: () = or_break_quiet!(Err(()));
                 val = i + 6;
             }
             val
