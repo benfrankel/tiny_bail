@@ -110,7 +110,7 @@ pub mod explicit {
     all(feature = "info", feature = "error"),
     all(feature = "warn", feature = "error"),
 ))]
-compile_error!("multiple log level features set");
+compile_error!("multiple log level features set (trace, debug, info, warn, error)");
 
 #[cfg(not(any(
     feature = "trace",
@@ -119,11 +119,11 @@ compile_error!("multiple log level features set");
     feature = "warn",
     feature = "error",
 )))]
-compile_error!("no log level feature set");
+compile_error!("no log level feature set (trace, debug, info, warn, error)");
 
 // Verify that the log backend feature combination is sane.
 #[cfg(all(feature = "log", feature = "tracing"))]
-compile_error!("multiple log backend features set");
+compile_error!("multiple log backend features set (log, tracing)");
 
 /// Set the log backend to `println`.
 #[doc(hidden)]
