@@ -152,13 +152,14 @@ macro_rules! set_log_level {
         #[doc(hidden)]
         #[macro_export]
         macro_rules! ___log_on_bail {
-            ($e:expr) => {
+            ($expr:expr, $err:expr) => {
                 $crate::__log_backend::$level!(
-                    "Bailed at {}:{}:{}: {:?}",
+                    "Bailed at {}:{}:{}: `{}` is `{:?}`",
                     file!(),
                     line!(),
                     column!(),
-                    $e,
+                    stringify!($expr),
+                    $err,
                 );
             };
         }
@@ -223,7 +224,7 @@ macro_rules! or_return {
         match $crate::IntoResult::into_result($expr) {
             Ok(x) => x,
             Err(e) => {
-                $crate::__log_on_bail!(e);
+                $crate::__log_on_bail!($expr, e);
                 return Default::default();
             }
         }
@@ -259,7 +260,7 @@ macro_rules! or_continue {
         match $crate::IntoResult::into_result($expr) {
             Ok(x) => x,
             Err(e) => {
-                $crate::__log_on_bail!(e);
+                $crate::__log_on_bail!($expr, e);
                 continue;
             }
         }
@@ -305,7 +306,7 @@ macro_rules! or_break {
         match $crate::IntoResult::into_result($expr) {
             Ok(x) => x,
             Err(e) => {
-                $crate::__log_on_bail!(e);
+                $crate::__log_on_bail!($expr, e);
                 break;
             }
         }

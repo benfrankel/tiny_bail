@@ -46,7 +46,7 @@ fn increment_last_manually(arr: &mut [i32]) {
     if let Some(x) = arr.last_mut() {
         *x += 1;
     } else {
-        tracing::warn!("Bailed at src/example.rs:34:18: None");
+        tracing::warn!("Bailed at src/example.rs:34:18: `arr.last_mut()` is `None`");
         return;
     }
 }
