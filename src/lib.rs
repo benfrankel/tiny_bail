@@ -24,8 +24,8 @@
 //! [`b!`](prelude::b), and
 //! [`bq!`](prelude::bq).
 //!
-//! The macros support [`bool`], [`Option`], and [`Result`] types out of the box.
-//! Implement [`Success`] to extend this to other types.
+//! The macros support [`Result`], [`Option`], and [`bool`] types out of the box.
+//! Implement [`IntoResult`] to extend this to other types.
 //!
 //! You can specify a return value as an optional first argument to the macro, or omit it to default to
 //! [`Default::default()`]—which even works in functions with no return value.
@@ -148,21 +148,20 @@ pub mod __log_backend {
     pub use tracing::{debug, error, info, trace, warn};
 }
 
-// TODO: Log the actual error value for `Result::Err`? (what if it doesn't impl `Debug`?)
 /// Set the log level.
 macro_rules! set_log_level {
     ($level:ident) => {
-        /// Log relevant info on bail.
+        /// Log the position and error of a bail.
         #[doc(hidden)]
         #[macro_export]
         macro_rules! ___log_on_bail {
-            ($expr:expr) => {
+            ($e:expr) => {
                 $crate::__log_backend::$level!(
-                    "Bailed at {}:{}:{}: `{}`",
+                    "Bailed at {}:{}:{}: {:?}",
                     file!(),
                     line!(),
                     column!(),
-                    stringify!($expr),
+                    $e,
                 );
             };
         }
@@ -184,27 +183,27 @@ set_log_level!(warn);
 #[cfg(feature = "error")]
 set_log_level!(error);
 
-/// An extension trait for extracting success from fallible types.
-pub trait Success<T> {
-    /// Return the success value, or `None` on failure.
-    fn success(self) -> Option<T>;
+/// An extension trait for separating success and failure values.
+pub trait IntoResult<T, E> {
+    /// Return the success or failure value as a `Result`.
+    fn into_result(self) -> Result<T, E>;
 }
 
-impl Success<()> for bool {
-    fn success(self) -> Option<()> {
-        self.then_some(())
+impl IntoResult<bool, bool> for bool {
+    fn into_result(self) -> Result<bool, bool> {
+        self.then_some(true).ok_or(false)
     }
 }
 
-impl<T> Success<T> for Option<T> {
-    fn success(self) -> Option<T> {
+impl<T> IntoResult<T, Option<()>> for Option<T> {
+    fn into_result(self) -> Result<T, Option<()>> {
+        self.ok_or(None)
+    }
+}
+
+impl<T, E> IntoResult<T, E> for Result<T, E> {
+    fn into_result(self) -> Result<T, E> {
         self
-    }
-}
-
-impl<T, E> Success<T> for Result<T, E> {
-    fn success(self) -> Option<T> {
-        self.ok()
     }
 }
 
@@ -214,20 +213,20 @@ impl<T, E> Success<T> for Result<T, E> {
 #[macro_export]
 macro_rules! or_return {
     ($return:expr, $expr:expr $(,)?) => {
-        match $crate::Success::success($expr) {
-            Some(x) => x,
-            None => {
-                $crate::__log_on_bail!($expr);
+        match $crate::IntoResult::into_result($expr) {
+            Ok(x) => x,
+            Err(e) => {
+                $crate::__log_on_bail!(e);
                 return $return;
             }
         }
     };
 
     ($expr:expr $(,)?) => {
-        match $crate::Success::success($expr) {
-            Some(x) => x,
-            None => {
-                $crate::__log_on_bail!($expr);
+        match $crate::IntoResult::into_result($expr) {
+            Ok(x) => x,
+            Err(e) => {
+                $crate::__log_on_bail!(e);
                 return Default::default();
             }
         }
@@ -240,16 +239,16 @@ macro_rules! or_return {
 #[macro_export]
 macro_rules! or_return_quiet {
     ($return:expr, $expr:expr $(,)?) => {
-        match $crate::Success::success($expr) {
-            Some(x) => x,
-            None => return $return,
+        match $crate::IntoResult::into_result($expr) {
+            Ok(x) => x,
+            _ => return $return,
         }
     };
 
     ($expr:expr $(,)?) => {
-        match $crate::Success::success($expr) {
-            Some(x) => x,
-            None => return Default::default(),
+        match $crate::IntoResult::into_result($expr) {
+            Ok(x) => x,
+            _ => return Default::default(),
         }
     };
 }
@@ -260,20 +259,20 @@ macro_rules! or_return_quiet {
 #[macro_export]
 macro_rules! or_continue {
     ($expr:expr $(,)?) => {
-        match $crate::Success::success($expr) {
-            Some(x) => x,
-            None => {
-                $crate::__log_on_bail!($expr);
+        match $crate::IntoResult::into_result($expr) {
+            Ok(x) => x,
+            Err(e) => {
+                $crate::__log_on_bail!(e);
                 continue;
             }
         }
     };
 
     ($label:lifetime, $expr:expr $(,)?) => {
-        match $crate::Success::success($expr) {
-            Some(x) => x,
-            None => {
-                $crate::__log_on_bail!($expr);
+        match $crate::IntoResult::into_result($expr) {
+            Ok(x) => x,
+            Err(e) => {
+                $crate::__log_on_bail!(e);
                 continue $label;
             }
         }
@@ -286,16 +285,16 @@ macro_rules! or_continue {
 #[macro_export]
 macro_rules! or_continue_quiet {
     ($expr:expr $(,)?) => {
-        match $crate::Success::success($expr) {
-            Some(x) => x,
-            None => continue,
+        match $crate::IntoResult::into_result($expr) {
+            Ok(x) => x,
+            _ => continue,
         }
     };
 
     ($label:lifetime, $expr:expr $(,)?) => {
-        match $crate::Success::success($expr) {
-            Some(x) => x,
-            None => continue $label,
+        match $crate::IntoResult::into_result($expr) {
+            Ok(x) => x,
+            _ => continue $label,
         }
     };
 }
@@ -306,20 +305,20 @@ macro_rules! or_continue_quiet {
 #[macro_export]
 macro_rules! or_break {
     ($expr:expr $(,)?) => {
-        match $crate::Success::success($expr) {
-            Some(x) => x,
-            None => {
-                $crate::__log_on_bail!($expr);
+        match $crate::IntoResult::into_result($expr) {
+            Ok(x) => x,
+            Err(e) => {
+                $crate::__log_on_bail!(e);
                 break;
             }
         }
     };
 
     ($label:lifetime, $expr:expr $(,)?) => {
-        match $crate::Success::success($expr) {
-            Some(x) => x,
-            None => {
-                $crate::__log_on_bail!($expr);
+        match $crate::IntoResult::into_result($expr) {
+            Ok(x) => x,
+            Err(e) => {
+                $crate::__log_on_bail!(e);
                 break $label;
             }
         }
@@ -332,16 +331,16 @@ macro_rules! or_break {
 #[macro_export]
 macro_rules! or_break_quiet {
     ($expr:expr $(,)?) => {
-        match $crate::Success::success($expr) {
-            Some(x) => x,
-            None => break,
+        match $crate::IntoResult::into_result($expr) {
+            Ok(x) => x,
+            _ => break,
         }
     };
 
     ($label:lifetime, $expr:expr $(,)?) => {
-        match $crate::Success::success($expr) {
-            Some(x) => x,
-            None => break $label,
+        match $crate::IntoResult::into_result($expr) {
+            Ok(x) => x,
+            _ => break $label,
         }
     };
 }
@@ -351,12 +350,12 @@ mod tests {
     #[test]
     fn r() {
         fn bail_true() -> usize {
-            let _: () = or_return!(true);
+            assert!(or_return!(true));
             9
         }
 
         fn bail_false() -> usize {
-            let _: () = or_return!(false);
+            assert!(or_return!(false));
             9
         }
 
@@ -389,12 +388,12 @@ mod tests {
     #[test]
     fn rq() {
         fn bail_true() -> usize {
-            let _: () = or_return_quiet!(true);
+            assert!(or_return_quiet!(true));
             9
         }
 
         fn bail_false() -> usize {
-            let _: () = or_return_quiet!(false);
+            assert!(or_return_quiet!(false));
             9
         }
 
@@ -430,7 +429,7 @@ mod tests {
             let mut val = 9;
             for i in 0..3 {
                 val = i + 3;
-                let _: () = or_continue!(true);
+                assert!(or_continue!(true));
                 val = i + 6;
             }
             val
@@ -440,7 +439,7 @@ mod tests {
             let mut val = 9;
             for i in 0..3 {
                 val = i + 3;
-                let _: () = or_continue!(false);
+                assert!(or_continue!(false));
                 val = i + 6;
             }
             val
@@ -498,7 +497,7 @@ mod tests {
             let mut val = 9;
             for i in 0..3 {
                 val = i + 3;
-                let _: () = or_continue_quiet!(true);
+                assert!(or_continue_quiet!(true));
                 val = i + 6;
             }
             val
@@ -508,7 +507,7 @@ mod tests {
             let mut val = 9;
             for i in 0..3 {
                 val = i + 3;
-                let _: () = or_continue_quiet!(false);
+                assert!(or_continue_quiet!(false));
                 val = i + 6;
             }
             val
@@ -566,7 +565,7 @@ mod tests {
             let mut val = 9;
             for i in 0..3 {
                 val = i + 3;
-                let _: () = or_break!(true);
+                assert!(or_break!(true));
                 val = i + 6;
             }
             val
@@ -576,7 +575,7 @@ mod tests {
             let mut val = 9;
             for i in 0..3 {
                 val = i + 3;
-                let _: () = or_break!(false);
+                assert!(or_break!(false));
                 val = i + 6;
             }
             val
@@ -634,7 +633,7 @@ mod tests {
             let mut val = 9;
             for i in 0..3 {
                 val = i + 3;
-                let _: () = or_break_quiet!(true);
+                assert!(or_break_quiet!(true));
                 val = i + 6;
             }
             val
@@ -644,7 +643,7 @@ mod tests {
             let mut val = 9;
             for i in 0..3 {
                 val = i + 3;
-                let _: () = or_break_quiet!(false);
+                assert!(or_break_quiet!(false));
                 val = i + 6;
             }
             val
