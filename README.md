@@ -28,11 +28,11 @@ Along with their tiny aliases:
 [`b!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.b.html), and
 [`bq!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.bq.html).
 
-The macros support `bool`, `Option`, and `Result` types out of the box. Implement
-[`Success`](https://docs.rs/tiny_bail/latest/tiny_bail/trait.Success.html) to extend this to other types.
+The macros support `Result`, `Option`, and `bool` types out of the box. Implement
+[`IntoResult`](https://docs.rs/tiny_bail/latest/tiny_bail/trait.IntoResult.html) to extend this to other types.
 
 You can specify a return value as an optional first argument to the macro, or omit it to default to
-`Default::default()`—which even works in functions with no return value.
+`Default::default()`—which works even in functions with no return value.
 
 # Example
 
