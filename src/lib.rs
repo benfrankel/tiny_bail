@@ -27,9 +27,6 @@
 //! The macros support [`Result`], [`Option`], and [`bool`] types out of the box.
 //! Implement [`IntoResult`] to extend this to other types.
 //!
-//! You can specify a return value as an optional first argument to the macro, or omit it to default to
-//! [`Default::default()`]—which works even in functions with no return value.
-//!
 //! # Example
 //!
 //! ```rust
