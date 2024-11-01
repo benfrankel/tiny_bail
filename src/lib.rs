@@ -257,7 +257,7 @@ macro_rules! or_return_quiet {
 /// Unwrap or continue with a warning.
 #[macro_export]
 macro_rules! or_continue {
-    ($expr:expr) => {
+    ($expr:expr $(,)?) => {
         match $crate::Success::success($expr) {
             Some(x) => x,
             None => {
@@ -271,7 +271,7 @@ macro_rules! or_continue {
 /// Unwrap or continue quietly.
 #[macro_export]
 macro_rules! or_continue_quiet {
-    ($expr:expr) => {
+    ($expr:expr $(,)?) => {
         match $crate::Success::success($expr) {
             Some(x) => x,
             None => continue,
