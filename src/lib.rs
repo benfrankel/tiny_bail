@@ -255,6 +255,8 @@ macro_rules! or_return_quiet {
 }
 
 /// Unwrap or continue with a warning.
+///
+/// Accepts an optional 'label as the first argument.
 #[macro_export]
 macro_rules! or_continue {
     ($expr:expr $(,)?) => {
@@ -266,9 +268,21 @@ macro_rules! or_continue {
             }
         }
     };
+
+    ($label:lifetime, $expr:expr $(,)?) => {
+        match $crate::Success::success($expr) {
+            Some(x) => x,
+            None => {
+                $crate::__log_on_bail!($expr);
+                continue $label;
+            }
+        }
+    };
 }
 
 /// Unwrap or continue quietly.
+///
+/// Accepts an optional 'label as the first argument.
 #[macro_export]
 macro_rules! or_continue_quiet {
     ($expr:expr $(,)?) => {
@@ -277,9 +291,18 @@ macro_rules! or_continue_quiet {
             None => continue,
         }
     };
+
+    ($label:lifetime, $expr:expr $(,)?) => {
+        match $crate::Success::success($expr) {
+            Some(x) => x,
+            None => continue $label,
+        }
+    };
 }
 
 /// Unwrap or break with a warning.
+///
+/// Accepts an optional 'label as the first argument.
 #[macro_export]
 macro_rules! or_break {
     ($expr:expr $(,)?) => {
@@ -291,15 +314,34 @@ macro_rules! or_break {
             }
         }
     };
+
+    ($label:lifetime, $expr:expr $(,)?) => {
+        match $crate::Success::success($expr) {
+            Some(x) => x,
+            None => {
+                $crate::__log_on_bail!($expr);
+                break $label;
+            }
+        }
+    };
 }
 
 /// Unwrap or break quietly.
+///
+/// Accepts an optional 'label as the first argument.
 #[macro_export]
 macro_rules! or_break_quiet {
     ($expr:expr $(,)?) => {
         match $crate::Success::success($expr) {
             Some(x) => x,
             None => break,
+        }
+    };
+
+    ($label:lifetime, $expr:expr $(,)?) => {
+        match $crate::Success::success($expr) {
+            Some(x) => x,
+            None => break $label,
         }
     };
 }
