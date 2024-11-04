@@ -214,7 +214,7 @@ macro_rules! or_return {
         match $crate::IntoResult::into_result($expr) {
             Ok(x) => x,
             Err(e) => {
-                $crate::__log_on_bail!(e);
+                $crate::__log_on_bail!($expr, e);
                 return $return;
             }
         }
@@ -270,7 +270,7 @@ macro_rules! or_continue {
         match $crate::IntoResult::into_result($expr) {
             Ok(x) => x,
             Err(e) => {
-                $crate::__log_on_bail!(e);
+                $crate::__log_on_bail!($expr, e);
                 continue $label;
             }
         }
@@ -316,7 +316,7 @@ macro_rules! or_break {
         match $crate::IntoResult::into_result($expr) {
             Ok(x) => x,
             Err(e) => {
-                $crate::__log_on_bail!(e);
+                $crate::__log_on_bail!($expr, e);
                 break $label;
             }
         }
