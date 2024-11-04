@@ -256,22 +256,22 @@ macro_rules! or_return_quiet {
 /// Accepts an optional 'label as the first argument.
 #[macro_export]
 macro_rules! or_continue {
+    ($label:tt, $expr:expr $(,)?) => {
+        match $crate::IntoResult::into_result($expr) {
+            Ok(x) => x,
+            Err(e) => {
+                $crate::__log_on_bail!($expr, e);
+                continue $label;
+            }
+        }
+    };
+
     ($expr:expr $(,)?) => {
         match $crate::IntoResult::into_result($expr) {
             Ok(x) => x,
             Err(e) => {
                 $crate::__log_on_bail!($expr, e);
                 continue;
-            }
-        }
-    };
-
-    ($label:lifetime, $expr:expr $(,)?) => {
-        match $crate::IntoResult::into_result($expr) {
-            Ok(x) => x,
-            Err(e) => {
-                $crate::__log_on_bail!($expr, e);
-                continue $label;
             }
         }
     };
@@ -282,17 +282,17 @@ macro_rules! or_continue {
 /// Accepts an optional 'label as the first argument.
 #[macro_export]
 macro_rules! or_continue_quiet {
+    ($label:tt, $expr:expr $(,)?) => {
+        match $crate::IntoResult::into_result($expr) {
+            Ok(x) => x,
+            _ => continue $label,
+        }
+    };
+
     ($expr:expr $(,)?) => {
         match $crate::IntoResult::into_result($expr) {
             Ok(x) => x,
             _ => continue,
-        }
-    };
-
-    ($label:lifetime, $expr:expr $(,)?) => {
-        match $crate::IntoResult::into_result($expr) {
-            Ok(x) => x,
-            _ => continue $label,
         }
     };
 }
@@ -302,22 +302,22 @@ macro_rules! or_continue_quiet {
 /// Accepts an optional 'label as the first argument.
 #[macro_export]
 macro_rules! or_break {
+    ($label:tt, $expr:expr $(,)?) => {
+        match $crate::IntoResult::into_result($expr) {
+            Ok(x) => x,
+            Err(e) => {
+                $crate::__log_on_bail!($expr, e);
+                break $label;
+            }
+        }
+    };
+
     ($expr:expr $(,)?) => {
         match $crate::IntoResult::into_result($expr) {
             Ok(x) => x,
             Err(e) => {
                 $crate::__log_on_bail!($expr, e);
                 break;
-            }
-        }
-    };
-
-    ($label:lifetime, $expr:expr $(,)?) => {
-        match $crate::IntoResult::into_result($expr) {
-            Ok(x) => x,
-            Err(e) => {
-                $crate::__log_on_bail!($expr, e);
-                break $label;
             }
         }
     };
@@ -328,17 +328,17 @@ macro_rules! or_break {
 /// Accepts an optional 'label as the first argument.
 #[macro_export]
 macro_rules! or_break_quiet {
+    ($label:tt, $expr:expr $(,)?) => {
+        match $crate::IntoResult::into_result($expr) {
+            Ok(x) => x,
+            _ => break $label,
+        }
+    };
+
     ($expr:expr $(,)?) => {
         match $crate::IntoResult::into_result($expr) {
             Ok(x) => x,
             _ => break,
-        }
-    };
-
-    ($label:lifetime, $expr:expr $(,)?) => {
-        match $crate::IntoResult::into_result($expr) {
-            Ok(x) => x,
-            _ => break $label,
         }
     };
 }
