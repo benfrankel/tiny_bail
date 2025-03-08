@@ -347,349 +347,211 @@ macro_rules! or_break_quiet {
 mod tests {
     #[test]
     fn r() {
-        fn bail_true() -> usize {
-            assert!(or_return!(true));
-            9
+        fn bail_bool(x: bool) -> i32 {
+            assert!(or_return!(x));
+            2
         }
 
-        fn bail_false() -> usize {
-            assert!(or_return!(false));
-            9
+        fn bail_option(x: Option<i32>) -> i32 {
+            assert_eq!(or_return!(x), 1);
+            2
         }
 
-        fn bail_some() -> usize {
-            or_return!(Some(9))
+        fn bail_result(x: Result<i32, ()>) -> i32 {
+            assert_eq!(or_return!(x), 1);
+            2
         }
 
-        fn bail_none() -> usize {
-            let _: () = or_return!(None);
-            9
-        }
-
-        fn bail_ok() -> usize {
-            or_return!(Ok::<_, ()>(9))
-        }
-
-        fn bail_err() -> usize {
-            let _: () = or_return!(Err(()));
-            9
-        }
-
-        assert_eq!(bail_true(), 9);
-        assert_eq!(bail_false(), 0);
-        assert_eq!(bail_some(), 9);
-        assert_eq!(bail_none(), 0);
-        assert_eq!(bail_ok(), 9);
-        assert_eq!(bail_err(), 0);
+        assert_eq!(bail_bool(true), 2);
+        assert_eq!(bail_bool(false), 0);
+        assert_eq!(bail_option(Some(1)), 2);
+        assert_eq!(bail_option(None), 0);
+        assert_eq!(bail_result(Ok(1)), 2);
+        assert_eq!(bail_result(Err(())), 0);
     }
 
     #[test]
     fn rq() {
-        fn bail_true() -> usize {
-            assert!(or_return_quiet!(true));
-            9
+        fn bail_bool(x: bool) -> i32 {
+            assert!(or_return_quiet!(x));
+            2
         }
 
-        fn bail_false() -> usize {
-            assert!(or_return_quiet!(false));
-            9
+        fn bail_option(x: Option<i32>) -> i32 {
+            assert_eq!(or_return_quiet!(x), 1);
+            2
         }
 
-        fn bail_some() -> usize {
-            or_return_quiet!(Some(9))
+        fn bail_result(x: Result<i32, ()>) -> i32 {
+            assert_eq!(or_return_quiet!(x), 1);
+            2
         }
 
-        fn bail_none() -> usize {
-            let _: () = or_return_quiet!(None);
-            9
-        }
-
-        fn bail_ok() -> usize {
-            or_return_quiet!(Ok::<_, ()>(9))
-        }
-
-        fn bail_err() -> usize {
-            let _: () = or_return_quiet!(Err(()));
-            9
-        }
-
-        assert_eq!(bail_true(), 9);
-        assert_eq!(bail_false(), 0);
-        assert_eq!(bail_some(), 9);
-        assert_eq!(bail_none(), 0);
-        assert_eq!(bail_ok(), 9);
-        assert_eq!(bail_err(), 0);
+        assert_eq!(bail_bool(true), 2);
+        assert_eq!(bail_bool(false), 0);
+        assert_eq!(bail_option(Some(1)), 2);
+        assert_eq!(bail_option(None), 0);
+        assert_eq!(bail_result(Ok(1)), 2);
+        assert_eq!(bail_result(Err(())), 0);
     }
 
     #[test]
     fn c() {
-        fn bail_true() -> usize {
-            let mut val = 9;
+        fn bail_bool(x: bool) -> i32 {
+            let mut val = 2;
             for i in 0..3 {
                 val = i + 3;
-                assert!(or_continue!(true));
+                assert!(or_continue!(x));
                 val = i + 6;
             }
             val
         }
 
-        fn bail_false() -> usize {
-            let mut val = 9;
+        fn bail_option(x: Option<i32>) -> i32 {
+            let mut val = 2;
             for i in 0..3 {
                 val = i + 3;
-                assert!(or_continue!(false));
+                assert_eq!(or_continue!(x), 1);
                 val = i + 6;
             }
             val
         }
 
-        fn bail_some() -> usize {
-            let mut val = 9;
+        fn bail_result(x: Result<i32, ()>) -> i32 {
+            let mut val = 2;
             for i in 0..3 {
                 val = i + 3;
-                val = or_continue!(Some(i + 6));
-            }
-            val
-        }
-
-        fn bail_none() -> usize {
-            let mut val = 9;
-            for i in 0..3 {
-                val = i + 3;
-                let _: () = or_continue!(None);
+                assert_eq!(or_continue!(x), 1);
                 val = i + 6;
             }
             val
         }
 
-        fn bail_ok() -> usize {
-            let mut val = 9;
-            for i in 0..3 {
-                val = i + 3;
-                val = or_continue!(Ok::<_, ()>(i + 6));
-            }
-            val
-        }
-
-        fn bail_err() -> usize {
-            let mut val = 9;
-            for i in 0..3 {
-                val = i + 3;
-                let _: () = or_continue!(Err(()));
-                val = i + 6;
-            }
-            val
-        }
-
-        assert_eq!(bail_true(), 8);
-        assert_eq!(bail_false(), 5);
-        assert_eq!(bail_some(), 8);
-        assert_eq!(bail_none(), 5);
-        assert_eq!(bail_ok(), 8);
-        assert_eq!(bail_err(), 5);
+        assert_eq!(bail_bool(true), 8);
+        assert_eq!(bail_bool(false), 5);
+        assert_eq!(bail_option(Some(1)), 8);
+        assert_eq!(bail_option(None), 5);
+        assert_eq!(bail_result(Ok(1)), 8);
+        assert_eq!(bail_result(Err(())), 5);
     }
 
     #[test]
     fn cq() {
-        fn bail_true() -> usize {
-            let mut val = 9;
+        fn bail_bool(x: bool) -> i32 {
+            let mut val = 2;
             for i in 0..3 {
                 val = i + 3;
-                assert!(or_continue_quiet!(true));
+                assert!(or_continue_quiet!(x));
                 val = i + 6;
             }
             val
         }
 
-        fn bail_false() -> usize {
-            let mut val = 9;
+        fn bail_option(x: Option<i32>) -> i32 {
+            let mut val = 2;
             for i in 0..3 {
                 val = i + 3;
-                assert!(or_continue_quiet!(false));
+                assert_eq!(or_continue_quiet!(x), 1);
                 val = i + 6;
             }
             val
         }
 
-        fn bail_some() -> usize {
-            let mut val = 9;
+        fn bail_result(x: Result<i32, ()>) -> i32 {
+            let mut val = 2;
             for i in 0..3 {
                 val = i + 3;
-                val = or_continue_quiet!(Some(i + 6));
-            }
-            val
-        }
-
-        fn bail_none() -> usize {
-            let mut val = 9;
-            for i in 0..3 {
-                val = i + 3;
-                let _: () = or_continue_quiet!(None);
+                assert_eq!(or_continue_quiet!(x), 1);
                 val = i + 6;
             }
             val
         }
 
-        fn bail_ok() -> usize {
-            let mut val = 9;
-            for i in 0..3 {
-                val = i + 3;
-                val = or_continue_quiet!(Ok::<_, ()>(i + 6));
-            }
-            val
-        }
-
-        fn bail_err() -> usize {
-            let mut val = 9;
-            for i in 0..3 {
-                val = i + 3;
-                let _: () = or_continue_quiet!(Err(()));
-                val = i + 6;
-            }
-            val
-        }
-
-        assert_eq!(bail_true(), 8);
-        assert_eq!(bail_false(), 5);
-        assert_eq!(bail_some(), 8);
-        assert_eq!(bail_none(), 5);
-        assert_eq!(bail_ok(), 8);
-        assert_eq!(bail_err(), 5);
+        assert_eq!(bail_bool(true), 8);
+        assert_eq!(bail_bool(false), 5);
+        assert_eq!(bail_option(Some(1)), 8);
+        assert_eq!(bail_option(None), 5);
+        assert_eq!(bail_result(Ok(1)), 8);
+        assert_eq!(bail_result(Err(())), 5);
     }
 
     #[test]
     fn b() {
-        fn bail_true() -> usize {
-            let mut val = 9;
+        fn bail_bool(x: bool) -> i32 {
+            let mut val = 2;
             for i in 0..3 {
                 val = i + 3;
-                assert!(or_break!(true));
+                assert!(or_break!(x));
                 val = i + 6;
             }
             val
         }
 
-        fn bail_false() -> usize {
-            let mut val = 9;
+        fn bail_option(x: Option<i32>) -> i32 {
+            let mut val = 2;
             for i in 0..3 {
                 val = i + 3;
-                assert!(or_break!(false));
+                assert_eq!(or_break!(x), 1);
                 val = i + 6;
             }
             val
         }
 
-        fn bail_some() -> usize {
-            let mut val = 9;
+        fn bail_result(x: Result<i32, ()>) -> i32 {
+            let mut val = 2;
             for i in 0..3 {
                 val = i + 3;
-                val = or_break!(Some(i + 6));
-            }
-            val
-        }
-
-        fn bail_none() -> usize {
-            let mut val = 9;
-            for i in 0..3 {
-                val = i + 3;
-                let _: () = or_break!(None);
+                assert_eq!(or_break!(x), 1);
                 val = i + 6;
             }
             val
         }
 
-        fn bail_ok() -> usize {
-            let mut val = 9;
-            for i in 0..3 {
-                val = i + 3;
-                val = or_break!(Ok::<_, ()>(i + 6));
-            }
-            val
-        }
-
-        fn bail_err() -> usize {
-            let mut val = 9;
-            for i in 0..3 {
-                val = i + 3;
-                let _: () = or_break!(Err(()));
-                val = i + 6;
-            }
-            val
-        }
-
-        assert_eq!(bail_true(), 8);
-        assert_eq!(bail_false(), 3);
-        assert_eq!(bail_some(), 8);
-        assert_eq!(bail_none(), 3);
-        assert_eq!(bail_ok(), 8);
-        assert_eq!(bail_err(), 3);
+        assert_eq!(bail_bool(true), 8);
+        assert_eq!(bail_bool(false), 3);
+        assert_eq!(bail_option(Some(1)), 8);
+        assert_eq!(bail_option(None), 3);
+        assert_eq!(bail_result(Ok(1)), 8);
+        assert_eq!(bail_result(Err(())), 3);
     }
 
     #[test]
     fn bq() {
-        fn bail_true() -> usize {
-            let mut val = 9;
+        fn bail_bool(x: bool) -> i32 {
+            let mut val = 2;
             for i in 0..3 {
                 val = i + 3;
-                assert!(or_break_quiet!(true));
+                assert!(or_break_quiet!(x));
                 val = i + 6;
             }
             val
         }
 
-        fn bail_false() -> usize {
-            let mut val = 9;
+        fn bail_option(x: Option<i32>) -> i32 {
+            let mut val = 2;
             for i in 0..3 {
                 val = i + 3;
-                assert!(or_break_quiet!(false));
+                assert_eq!(or_break_quiet!(x), 1);
                 val = i + 6;
             }
             val
         }
 
-        fn bail_some() -> usize {
-            let mut val = 9;
+        fn bail_result(x: Result<i32, ()>) -> i32 {
+            let mut val = 2;
             for i in 0..3 {
                 val = i + 3;
-                val = or_break_quiet!(Some(i + 6));
-            }
-            val
-        }
-
-        fn bail_none() -> usize {
-            let mut val = 9;
-            for i in 0..3 {
-                val = i + 3;
-                let _: () = or_break_quiet!(None);
+                assert_eq!(or_break_quiet!(x), 1);
                 val = i + 6;
             }
             val
         }
 
-        fn bail_ok() -> usize {
-            let mut val = 9;
-            for i in 0..3 {
-                val = i + 3;
-                val = or_break_quiet!(Ok::<_, ()>(i + 6));
-            }
-            val
-        }
-
-        fn bail_err() -> usize {
-            let mut val = 9;
-            for i in 0..3 {
-                val = i + 3;
-                let _: () = or_break_quiet!(Err(()));
-                val = i + 6;
-            }
-            val
-        }
-
-        assert_eq!(bail_true(), 8);
-        assert_eq!(bail_false(), 3);
-        assert_eq!(bail_some(), 8);
-        assert_eq!(bail_none(), 3);
-        assert_eq!(bail_ok(), 8);
-        assert_eq!(bail_err(), 3);
+        assert_eq!(bail_bool(true), 8);
+        assert_eq!(bail_bool(false), 3);
+        assert_eq!(bail_option(Some(1)), 8);
+        assert_eq!(bail_option(None), 3);
+        assert_eq!(bail_result(Ok(1)), 8);
+        assert_eq!(bail_result(Err(())), 3);
     }
 }
