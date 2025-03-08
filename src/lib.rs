@@ -349,24 +349,27 @@ mod tests {
     fn r() {
         fn bail_bool(x: bool) -> i32 {
             assert!(or_return!(x));
-            2
+            5
         }
 
         fn bail_option(x: Option<i32>) -> i32 {
             assert_eq!(or_return!(x), 1);
-            2
+            5
         }
 
         fn bail_result(x: Result<i32, ()>) -> i32 {
             assert_eq!(or_return!(x), 1);
-            2
+            5
         }
 
-        assert_eq!(bail_bool(true), 2);
+        // Success cases should fall through and output 5.
+        assert_eq!(bail_bool(true), 5);
+        assert_eq!(bail_option(Some(1)), 5);
+        assert_eq!(bail_result(Ok(1)), 5);
+
+        // Failure cases should return early with the default value 0.
         assert_eq!(bail_bool(false), 0);
-        assert_eq!(bail_option(Some(1)), 2);
         assert_eq!(bail_option(None), 0);
-        assert_eq!(bail_result(Ok(1)), 2);
         assert_eq!(bail_result(Err(())), 0);
     }
 
@@ -374,184 +377,199 @@ mod tests {
     fn rq() {
         fn bail_bool(x: bool) -> i32 {
             assert!(or_return_quiet!(x));
-            2
+            5
         }
 
         fn bail_option(x: Option<i32>) -> i32 {
             assert_eq!(or_return_quiet!(x), 1);
-            2
+            5
         }
 
         fn bail_result(x: Result<i32, ()>) -> i32 {
             assert_eq!(or_return_quiet!(x), 1);
-            2
+            5
         }
 
-        assert_eq!(bail_bool(true), 2);
+        // Success cases should fall through and output 5.
+        assert_eq!(bail_bool(true), 5);
+        assert_eq!(bail_option(Some(1)), 5);
+        assert_eq!(bail_result(Ok(1)), 5);
+
+        // Failure cases should return early with the default value 0.
         assert_eq!(bail_bool(false), 0);
-        assert_eq!(bail_option(Some(1)), 2);
         assert_eq!(bail_option(None), 0);
-        assert_eq!(bail_result(Ok(1)), 2);
         assert_eq!(bail_result(Err(())), 0);
     }
 
     #[test]
     fn c() {
         fn bail_bool(x: bool) -> i32 {
-            let mut val = 2;
-            for i in 0..3 {
-                val = i + 3;
+            let mut val = 1;
+            for _ in 0..2 {
+                val += 1;
                 assert!(or_continue!(x));
-                val = i + 6;
+                val += 1;
             }
             val
         }
 
         fn bail_option(x: Option<i32>) -> i32 {
-            let mut val = 2;
-            for i in 0..3 {
-                val = i + 3;
+            let mut val = 1;
+            for _ in 0..2 {
+                val += 1;
                 assert_eq!(or_continue!(x), 1);
-                val = i + 6;
+                val += 1;
             }
             val
         }
 
         fn bail_result(x: Result<i32, ()>) -> i32 {
-            let mut val = 2;
-            for i in 0..3 {
-                val = i + 3;
+            let mut val = 1;
+            for _ in 0..2 {
+                val += 1;
                 assert_eq!(or_continue!(x), 1);
-                val = i + 6;
+                val += 1;
             }
             val
         }
 
-        assert_eq!(bail_bool(true), 8);
-        assert_eq!(bail_bool(false), 5);
-        assert_eq!(bail_option(Some(1)), 8);
-        assert_eq!(bail_option(None), 5);
-        assert_eq!(bail_result(Ok(1)), 8);
-        assert_eq!(bail_result(Err(())), 5);
+        // Success cases should fall through and output 5.
+        assert_eq!(bail_bool(true), 5);
+        assert_eq!(bail_option(Some(1)), 5);
+        assert_eq!(bail_result(Ok(1)), 5);
+
+        // Failure cases should continue early and output 3.
+        assert_eq!(bail_bool(false), 3);
+        assert_eq!(bail_option(None), 3);
+        assert_eq!(bail_result(Err(())), 3);
     }
 
     #[test]
     fn cq() {
         fn bail_bool(x: bool) -> i32 {
-            let mut val = 2;
-            for i in 0..3 {
-                val = i + 3;
+            let mut val = 1;
+            for _ in 0..2 {
+                val += 1;
                 assert!(or_continue_quiet!(x));
-                val = i + 6;
+                val += 1;
             }
             val
         }
 
         fn bail_option(x: Option<i32>) -> i32 {
-            let mut val = 2;
-            for i in 0..3 {
-                val = i + 3;
+            let mut val = 1;
+            for _ in 0..2 {
+                val += 1;
                 assert_eq!(or_continue_quiet!(x), 1);
-                val = i + 6;
+                val += 1;
             }
             val
         }
 
         fn bail_result(x: Result<i32, ()>) -> i32 {
-            let mut val = 2;
-            for i in 0..3 {
-                val = i + 3;
+            let mut val = 1;
+            for _ in 0..2 {
+                val += 1;
                 assert_eq!(or_continue_quiet!(x), 1);
-                val = i + 6;
+                val += 1;
             }
             val
         }
 
-        assert_eq!(bail_bool(true), 8);
-        assert_eq!(bail_bool(false), 5);
-        assert_eq!(bail_option(Some(1)), 8);
-        assert_eq!(bail_option(None), 5);
-        assert_eq!(bail_result(Ok(1)), 8);
-        assert_eq!(bail_result(Err(())), 5);
+        // Success cases should fall through and output 5.
+        assert_eq!(bail_bool(true), 5);
+        assert_eq!(bail_option(Some(1)), 5);
+        assert_eq!(bail_result(Ok(1)), 5);
+
+        // Failure cases should continue early and output 3.
+        assert_eq!(bail_bool(false), 3);
+        assert_eq!(bail_option(None), 3);
+        assert_eq!(bail_result(Err(())), 3);
     }
 
     #[test]
     fn b() {
         fn bail_bool(x: bool) -> i32 {
-            let mut val = 2;
-            for i in 0..3 {
-                val = i + 3;
+            let mut val = 1;
+            for _ in 0..2 {
+                val += 1;
                 assert!(or_break!(x));
-                val = i + 6;
+                val += 1;
             }
             val
         }
 
         fn bail_option(x: Option<i32>) -> i32 {
-            let mut val = 2;
-            for i in 0..3 {
-                val = i + 3;
+            let mut val = 1;
+            for _ in 0..2 {
+                val += 1;
                 assert_eq!(or_break!(x), 1);
-                val = i + 6;
+                val += 1;
             }
             val
         }
 
         fn bail_result(x: Result<i32, ()>) -> i32 {
-            let mut val = 2;
-            for i in 0..3 {
-                val = i + 3;
+            let mut val = 1;
+            for _ in 0..2 {
+                val += 1;
                 assert_eq!(or_break!(x), 1);
-                val = i + 6;
+                val += 1;
             }
             val
         }
 
-        assert_eq!(bail_bool(true), 8);
-        assert_eq!(bail_bool(false), 3);
-        assert_eq!(bail_option(Some(1)), 8);
-        assert_eq!(bail_option(None), 3);
-        assert_eq!(bail_result(Ok(1)), 8);
-        assert_eq!(bail_result(Err(())), 3);
+        // Success cases should fall through and output 5.
+        assert_eq!(bail_bool(true), 5);
+        assert_eq!(bail_option(Some(1)), 5);
+        assert_eq!(bail_result(Ok(1)), 5);
+
+        // Failure cases should break early and output 2.
+        assert_eq!(bail_bool(false), 2);
+        assert_eq!(bail_option(None), 2);
+        assert_eq!(bail_result(Err(())), 2);
     }
 
     #[test]
     fn bq() {
         fn bail_bool(x: bool) -> i32 {
-            let mut val = 2;
-            for i in 0..3 {
-                val = i + 3;
+            let mut val = 1;
+            for _ in 0..2 {
+                val += 1;
                 assert!(or_break_quiet!(x));
-                val = i + 6;
+                val += 1;
             }
             val
         }
 
         fn bail_option(x: Option<i32>) -> i32 {
-            let mut val = 2;
-            for i in 0..3 {
-                val = i + 3;
+            let mut val = 1;
+            for _ in 0..2 {
+                val += 1;
                 assert_eq!(or_break_quiet!(x), 1);
-                val = i + 6;
+                val += 1;
             }
             val
         }
 
         fn bail_result(x: Result<i32, ()>) -> i32 {
-            let mut val = 2;
-            for i in 0..3 {
-                val = i + 3;
+            let mut val = 1;
+            for _ in 0..2 {
+                val += 1;
                 assert_eq!(or_break_quiet!(x), 1);
-                val = i + 6;
+                val += 1;
             }
             val
         }
 
-        assert_eq!(bail_bool(true), 8);
-        assert_eq!(bail_bool(false), 3);
-        assert_eq!(bail_option(Some(1)), 8);
-        assert_eq!(bail_option(None), 3);
-        assert_eq!(bail_result(Ok(1)), 8);
-        assert_eq!(bail_result(Err(())), 3);
+        // Success cases should fall through and output 5.
+        assert_eq!(bail_bool(true), 5);
+        assert_eq!(bail_option(Some(1)), 5);
+        assert_eq!(bail_result(Ok(1)), 5);
+
+        // Failure cases should break early and output 2.
+        assert_eq!(bail_bool(false), 2);
+        assert_eq!(bail_option(None), 2);
+        assert_eq!(bail_result(Err(())), 2);
     }
 }
