@@ -353,179 +353,311 @@ mod tests {
     fn r() {
         fn bail<T: Eq + Debug, E: Debug>(outer: impl IntoResult<T, E>, inner: T) -> i32 {
             assert_eq!(or_return!(outer), inner);
-            3
+            2
         }
 
         // Success cases should fall through.
-        let success = 3;
+        let success = 2;
         assert_eq!(bail(true, true), success);
-        assert_eq!(bail(Some(1), 1), success);
-        assert_eq!(bail(Ok::<_, ()>(1), 1), success);
+        assert_eq!(bail(Some(-1), -1), success);
+        assert_eq!(bail(Ok::<_, ()>(-1), -1), success);
 
         // Failure cases should return early with the default value.
         let failure = 0;
         assert_eq!(bail(false, true), failure);
-        assert_eq!(bail(None, 1), failure);
-        assert_eq!(bail(Err(()), 1), failure);
+        assert_eq!(bail(None, -1), failure);
+        assert_eq!(bail(Err(()), -1), failure);
     }
 
     #[test]
     fn r_with_value() {
         fn bail<T: Eq + Debug, E: Debug>(outer: impl IntoResult<T, E>, inner: T) -> i32 {
-            assert_eq!(or_return!(2, outer), inner);
-            3
+            assert_eq!(or_return!(1, outer), inner);
+            2
         }
 
         // Success cases should fall through.
-        let success = 3;
+        let success = 2;
         assert_eq!(bail(true, true), success);
-        assert_eq!(bail(Some(1), 1), success);
-        assert_eq!(bail(Ok::<_, ()>(1), 1), success);
+        assert_eq!(bail(Some(-1), -1), success);
+        assert_eq!(bail(Ok::<_, ()>(-1), -1), success);
 
         // Failure cases should return early with the provided value.
-        let failure = 2;
+        let failure = 1;
         assert_eq!(bail(false, true), failure);
-        assert_eq!(bail(None, 1), failure);
-        assert_eq!(bail(Err(()), 1), failure);
+        assert_eq!(bail(None, -1), failure);
+        assert_eq!(bail(Err(()), -1), failure);
     }
 
     #[test]
     fn rq() {
         fn bail<T: Eq + Debug, E: Debug>(outer: impl IntoResult<T, E>, inner: T) -> i32 {
             assert_eq!(or_return_quiet!(outer), inner);
-            3
+            2
         }
 
         // Success cases should fall through.
-        let success = 3;
+        let success = 2;
         assert_eq!(bail(true, true), success);
-        assert_eq!(bail(Some(1), 1), success);
-        assert_eq!(bail(Ok::<_, ()>(1), 1), success);
+        assert_eq!(bail(Some(-1), -1), success);
+        assert_eq!(bail(Ok::<_, ()>(-1), -1), success);
 
         // Failure cases should return early with the default value.
         let failure = 0;
         assert_eq!(bail(false, true), failure);
-        assert_eq!(bail(None, 1), failure);
-        assert_eq!(bail(Err(()), 1), failure);
+        assert_eq!(bail(None, -1), failure);
+        assert_eq!(bail(Err(()), -1), failure);
     }
 
     #[test]
     fn rq_with_value() {
         fn bail<T: Eq + Debug, E: Debug>(outer: impl IntoResult<T, E>, inner: T) -> i32 {
-            assert_eq!(or_return_quiet!(2, outer), inner);
-            3
+            assert_eq!(or_return_quiet!(1, outer), inner);
+            2
         }
 
         // Success cases should fall through.
-        let success = 3;
+        let success = 2;
         assert_eq!(bail(true, true), success);
-        assert_eq!(bail(Some(1), 1), success);
-        assert_eq!(bail(Ok::<_, ()>(1), 1), success);
+        assert_eq!(bail(Some(-1), -1), success);
+        assert_eq!(bail(Ok::<_, ()>(-1), -1), success);
 
         // Failure cases should return early with the provided value.
-        let failure = 2;
+        let failure = 1;
         assert_eq!(bail(false, true), failure);
-        assert_eq!(bail(None, 1), failure);
-        assert_eq!(bail(Err(()), 1), failure);
+        assert_eq!(bail(None, -1), failure);
+        assert_eq!(bail(Err(()), -1), failure);
     }
 
     #[test]
     fn c() {
         fn bail<T: Eq + Debug, E: Debug>(outer: impl IntoResult<T, E> + Copy, inner: T) -> i32 {
-            let mut val = 1;
-            for _ in 0..2 {
+            let mut val = 0;
+            '_a: for _ in 0..2 {
                 val += 1;
-                assert_eq!(or_continue!(outer), inner);
+                for _ in 0..2 {
+                    val += 1;
+                    assert_eq!(or_continue!(outer), inner);
+                    val += 1;
+                }
                 val += 1;
             }
             val
         }
 
         // Success cases should fall through.
-        let success = 5;
+        let success = 12;
         assert_eq!(bail(true, true), success);
-        assert_eq!(bail(Some(1), 1), success);
-        assert_eq!(bail(Ok::<_, ()>(1), 1), success);
+        assert_eq!(bail(Some(-1), -1), success);
+        assert_eq!(bail(Ok::<_, ()>(-1), -1), success);
 
-        // Failure cases should continue early.
-        let failure = 3;
+        // Failure cases should continue early to the inner loop.
+        let failure = 8;
         assert_eq!(bail(false, true), failure);
-        assert_eq!(bail(None, 1), failure);
-        assert_eq!(bail(Err(()), 1), failure);
+        assert_eq!(bail(None, -1), failure);
+        assert_eq!(bail(Err(()), -1), failure);
+    }
+
+    #[test]
+    fn c_with_label() {
+        fn bail<T: Eq + Debug, E: Debug>(outer: impl IntoResult<T, E> + Copy, inner: T) -> i32 {
+            let mut val = 0;
+            '_a: for _ in 0..2 {
+                val += 1;
+                for _ in 0..2 {
+                    val += 1;
+                    assert_eq!(or_continue!('_a, outer), inner);
+                    val += 1;
+                }
+                val += 1;
+            }
+            val
+        }
+
+        // Success cases should fall through.
+        let success = 12;
+        assert_eq!(bail(true, true), success);
+        assert_eq!(bail(Some(-1), -1), success);
+        assert_eq!(bail(Ok::<_, ()>(-1), -1), success);
+
+        // Failure cases should continue early to the outer loop.
+        let failure = 4;
+        assert_eq!(bail(false, true), failure);
+        assert_eq!(bail(None, -1), failure);
+        assert_eq!(bail(Err(()), -1), failure);
     }
 
     #[test]
     fn cq() {
         fn bail<T: Eq + Debug, E: Debug>(outer: impl IntoResult<T, E> + Copy, inner: T) -> i32 {
-            let mut val = 1;
-            for _ in 0..2 {
+            let mut val = 0;
+            '_a: for _ in 0..2 {
                 val += 1;
-                assert_eq!(or_continue_quiet!(outer), inner);
+                for _ in 0..2 {
+                    val += 1;
+                    assert_eq!(or_continue_quiet!(outer), inner);
+                    val += 1;
+                }
                 val += 1;
             }
             val
         }
 
         // Success cases should fall through.
-        let success = 5;
+        let success = 12;
         assert_eq!(bail(true, true), success);
-        assert_eq!(bail(Some(1), 1), success);
-        assert_eq!(bail(Ok::<_, ()>(1), 1), success);
+        assert_eq!(bail(Some(-1), -1), success);
+        assert_eq!(bail(Ok::<_, ()>(-1), -1), success);
 
-        // Failure cases should continue early.
-        let failure = 3;
+        // Failure cases should continue early to the inner loop.
+        let failure = 8;
         assert_eq!(bail(false, true), failure);
-        assert_eq!(bail(None, 1), failure);
-        assert_eq!(bail(Err(()), 1), failure);
+        assert_eq!(bail(None, -1), failure);
+        assert_eq!(bail(Err(()), -1), failure);
+    }
+
+    #[test]
+    fn cq_with_label() {
+        fn bail<T: Eq + Debug, E: Debug>(outer: impl IntoResult<T, E> + Copy, inner: T) -> i32 {
+            let mut val = 0;
+            '_a: for _ in 0..2 {
+                val += 1;
+                for _ in 0..2 {
+                    val += 1;
+                    assert_eq!(or_continue_quiet!('_a, outer), inner);
+                    val += 1;
+                }
+                val += 1;
+            }
+            val
+        }
+
+        // Success cases should fall through.
+        let success = 12;
+        assert_eq!(bail(true, true), success);
+        assert_eq!(bail(Some(-1), -1), success);
+        assert_eq!(bail(Ok::<_, ()>(-1), -1), success);
+
+        // Failure cases should continue early to the outer loop.
+        let failure = 4;
+        assert_eq!(bail(false, true), failure);
+        assert_eq!(bail(None, -1), failure);
+        assert_eq!(bail(Err(()), -1), failure);
     }
 
     #[test]
     fn b() {
         fn bail<T: Eq + Debug, E: Debug>(outer: impl IntoResult<T, E> + Copy, inner: T) -> i32 {
-            let mut val = 1;
-            for _ in 0..2 {
+            let mut val = 0;
+            '_a: for _ in 0..2 {
                 val += 1;
-                assert_eq!(or_break!(outer), inner);
+                for _ in 0..2 {
+                    val += 1;
+                    assert_eq!(or_break!(outer), inner);
+                    val += 1;
+                }
                 val += 1;
             }
             val
         }
 
         // Success cases should fall through.
-        let success = 5;
+        let success = 12;
         assert_eq!(bail(true, true), success);
-        assert_eq!(bail(Some(1), 1), success);
-        assert_eq!(bail(Ok::<_, ()>(1), 1), success);
+        assert_eq!(bail(Some(-1), -1), success);
+        assert_eq!(bail(Ok::<_, ()>(-1), -1), success);
 
-        // Failure cases should break early.
+        // Failure cases should break early from the inner loop.
+        let failure = 6;
+        assert_eq!(bail(false, true), failure);
+        assert_eq!(bail(None, -1), failure);
+        assert_eq!(bail(Err(()), -1), failure);
+    }
+
+    #[test]
+    fn b_with_label() {
+        fn bail<T: Eq + Debug, E: Debug>(outer: impl IntoResult<T, E> + Copy, inner: T) -> i32 {
+            let mut val = 0;
+            '_a: for _ in 0..2 {
+                val += 1;
+                for _ in 0..2 {
+                    val += 1;
+                    assert_eq!(or_break!('_a, outer), inner);
+                    val += 1;
+                }
+                val += 1;
+            }
+            val
+        }
+
+        // Success cases should fall through.
+        let success = 12;
+        assert_eq!(bail(true, true), success);
+        assert_eq!(bail(Some(-1), -1), success);
+        assert_eq!(bail(Ok::<_, ()>(-1), -1), success);
+
+        // Failure cases should break early from the outer loop.
         let failure = 2;
         assert_eq!(bail(false, true), failure);
-        assert_eq!(bail(None, 1), failure);
-        assert_eq!(bail(Err(()), 1), failure);
+        assert_eq!(bail(None, -1), failure);
+        assert_eq!(bail(Err(()), -1), failure);
     }
 
     #[test]
     fn bq() {
         fn bail<T: Eq + Debug, E: Debug>(outer: impl IntoResult<T, E> + Copy, inner: T) -> i32 {
-            let mut val = 1;
-            for _ in 0..2 {
+            let mut val = 0;
+            '_a: for _ in 0..2 {
                 val += 1;
-                assert_eq!(or_break_quiet!(outer), inner);
+                for _ in 0..2 {
+                    val += 1;
+                    assert_eq!(or_break_quiet!(outer), inner);
+                    val += 1;
+                }
                 val += 1;
             }
             val
         }
 
         // Success cases should fall through.
-        let success = 5;
+        let success = 12;
         assert_eq!(bail(true, true), success);
-        assert_eq!(bail(Some(1), 1), success);
-        assert_eq!(bail(Ok::<_, ()>(1), 1), success);
+        assert_eq!(bail(Some(-1), -1), success);
+        assert_eq!(bail(Ok::<_, ()>(-1), -1), success);
 
-        // Failure cases should break early.
+        // Failure cases should break early from the inner loop.
+        let failure = 6;
+        assert_eq!(bail(false, true), failure);
+        assert_eq!(bail(None, -1), failure);
+        assert_eq!(bail(Err(()), -1), failure);
+    }
+
+    #[test]
+    fn bq_with_label() {
+        fn bail<T: Eq + Debug, E: Debug>(outer: impl IntoResult<T, E> + Copy, inner: T) -> i32 {
+            let mut val = 0;
+            '_a: for _ in 0..2 {
+                val += 1;
+                for _ in 0..2 {
+                    val += 1;
+                    assert_eq!(or_break_quiet!('_a, outer), inner);
+                    val += 1;
+                }
+                val += 1;
+            }
+            val
+        }
+
+        // Success cases should fall through.
+        let success = 12;
+        assert_eq!(bail(true, true), success);
+        assert_eq!(bail(Some(-1), -1), success);
+        assert_eq!(bail(Ok::<_, ()>(-1), -1), success);
+
+        // Failure cases should break early from the outer loop.
         let failure = 2;
         assert_eq!(bail(false, true), failure);
-        assert_eq!(bail(None, 1), failure);
-        assert_eq!(bail(Err(()), 1), failure);
+        assert_eq!(bail(None, -1), failure);
+        assert_eq!(bail(Err(()), -1), failure);
     }
 }
