@@ -1,8 +1,8 @@
 # tiny_bail
 
-[![Crates.io](https://img.shields.io/crates/v/tiny_bail.svg)](https://crates.io/crates/tiny_bail)
-[![Docs](https://docs.rs/tiny_bail/badge.svg)](https://docs.rs/tiny_bail/latest/tiny_bail/)
-[![License](https://img.shields.io/badge/license-MIT%2FApache-blue.svg)](https://github.com/benfrankel/tiny_bail)
+[![Crates.io](https://img.shields.io/crates/v/tiny_bail.svg?style=for-the-badge)](https://crates.io/crates/tiny_bail)
+[![Docs](https://img.shields.io/docsrs/tiny_bail/latest?style=for-the-badge)](https://docs.rs/tiny_bail/latest/tiny_bail/)
+[![License](https://img.shields.io/badge/license-MIT%2FApache-blue.svg?style=for-the-badge)](https://github.com/benfrankel/tiny_bail)
 
 Bailing is an error-handling pattern that takes the middle path between `unwrap` and `?`:
 - Compared to `unwrap`: Bail will `return`, `continue`, or `break` instead of panicking.
