@@ -94,6 +94,10 @@ pub mod explicit {
     };
 }
 
+// Verify that the log backend feature combination is sane.
+#[cfg(all(feature = "log", feature = "tracing"))]
+compile_error!("multiple log backend features are set (log, tracing)");
+
 // Verify that the log level feature combination is sane.
 #[cfg(any(
     all(feature = "trace", feature = "debug"),
@@ -107,42 +111,36 @@ pub mod explicit {
     all(feature = "info", feature = "error"),
     all(feature = "warn", feature = "error"),
 ))]
-compile_error!("multiple log level features set (trace, debug, info, warn, error)");
+compile_error!("multiple log level features are set (trace, debug, info, warn, error)");
 
-#[cfg(not(any(
-    feature = "trace",
-    feature = "debug",
-    feature = "info",
-    feature = "warn",
-    feature = "error",
-)))]
-compile_error!("no log level feature set (trace, debug, info, warn, error)");
+#[cfg(not(all(
+    any(
+        feature = "log",
+        feature = "tracing",
+    ),
+    any(
+        feature = "trace",
+        feature = "debug",
+        feature = "info",
+        feature = "warn",
+        feature = "error",
+    ),
+))]
+compile_error!("a log backend feature is set (log, tracing), but no log level feature is set (trace, debug, info, warn, error)");
 
-// Verify that the log backend feature combination is sane.
-#[cfg(all(feature = "log", feature = "tracing"))]
-compile_error!("multiple log backend features set (log, tracing)");
-
-/// Set the log backend to `println`.
 #[doc(hidden)]
-#[cfg(not(any(feature = "log", feature = "tracing")))]
 pub mod __log_backend {
-    pub use std::{
-        println as trace, println as debug, println as info, println as warn, println as error,
-    };
-}
-
-/// Set the log backend to `log`.
-#[doc(hidden)]
-#[cfg(feature = "log")]
-pub mod __log_backend {
+    /// Set the log backend to `log`.
+    #[cfg(feature = "log")]
     pub use log::{debug, error, info, trace, warn};
-}
-
-/// Set the log backend to `tracing`.
-#[doc(hidden)]
-#[cfg(feature = "tracing")]
-pub mod __log_backend {
+    
+    /// Set the log backend to `tracing`.
+    #[cfg(feature = "log")]
     pub use tracing::{debug, error, info, trace, warn};
+    
+    /// Fall back to `println`.
+    #[cfg(not(any(feature = "log", feature = "tracing")))]
+    pub use std::println;
 }
 
 /// Set the log level.
@@ -180,6 +178,14 @@ set_log_level!(info);
 set_log_level!(warn);
 #[cfg(feature = "error")]
 set_log_level!(error);
+#[cfg(not(any(
+    feature = "trace",
+    feature = "debug",
+    feature = "info",
+    feature = "warn",
+    feature = "error",
+)))]
+set_log_level!(println);
 
 /// An extension trait for separating success and failure values.
 pub trait IntoResult<T, E> {
@@ -212,8 +218,8 @@ impl<T, E> IntoResult<T, E> for Result<T, E> {
 macro_rules! or_return {
     ($return:expr, $expr:expr $(,)?) => {
         match $crate::IntoResult::into_result($expr) {
-            Ok(x) => x,
-            Err(e) => {
+            ::core::result::Result::Ok(x) => x,
+            ::core::result::Result::Err(e) => {
                 $crate::__log_on_bail!($expr, e);
                 return $return;
             }
@@ -222,10 +228,10 @@ macro_rules! or_return {
 
     ($expr:expr $(,)?) => {
         match $crate::IntoResult::into_result($expr) {
-            Ok(x) => x,
-            Err(e) => {
+            ::core::result::Result::Ok(x) => x,
+            ::core::result::Result::Err(e) => {
                 $crate::__log_on_bail!($expr, e);
-                return Default::default();
+                return ::core::default::Default::default();
             }
         }
     };
@@ -238,15 +244,15 @@ macro_rules! or_return {
 macro_rules! or_return_quiet {
     ($return:expr, $expr:expr $(,)?) => {
         match $crate::IntoResult::into_result($expr) {
-            Ok(x) => x,
+            ::core::result::Result::Ok(x) => x,
             _ => return $return,
         }
     };
 
     ($expr:expr $(,)?) => {
         match $crate::IntoResult::into_result($expr) {
-            Ok(x) => x,
-            _ => return Default::default(),
+            ::core::result::Result::Ok(x) => x,
+            _ => return ::core::default::Default::default(),
         }
     };
 }
@@ -258,8 +264,8 @@ macro_rules! or_return_quiet {
 macro_rules! or_continue {
     ($label:tt, $expr:expr $(,)?) => {
         match $crate::IntoResult::into_result($expr) {
-            Ok(x) => x,
-            Err(e) => {
+            ::core::result::Result::Ok(x) => x,
+            ::core::result::Result::Err(e) => {
                 $crate::__log_on_bail!($expr, e);
                 continue $label;
             }
@@ -268,8 +274,8 @@ macro_rules! or_continue {
 
     ($expr:expr $(,)?) => {
         match $crate::IntoResult::into_result($expr) {
-            Ok(x) => x,
-            Err(e) => {
+            ::core::result::Result::Ok(x) => x,
+            ::core::result::Result::Err(e) => {
                 $crate::__log_on_bail!($expr, e);
                 continue;
             }
@@ -284,14 +290,14 @@ macro_rules! or_continue {
 macro_rules! or_continue_quiet {
     ($label:tt, $expr:expr $(,)?) => {
         match $crate::IntoResult::into_result($expr) {
-            Ok(x) => x,
+            ::core::result::Result::Ok(x) => x,
             _ => continue $label,
         }
     };
 
     ($expr:expr $(,)?) => {
         match $crate::IntoResult::into_result($expr) {
-            Ok(x) => x,
+            ::core::result::Result::Ok(x) => x,
             _ => continue,
         }
     };
@@ -304,8 +310,8 @@ macro_rules! or_continue_quiet {
 macro_rules! or_break {
     ($label:tt, $expr:expr $(,)?) => {
         match $crate::IntoResult::into_result($expr) {
-            Ok(x) => x,
-            Err(e) => {
+            ::core::result::Result::Ok(x) => x,
+            ::core::result::Result::Err(e) => {
                 $crate::__log_on_bail!($expr, e);
                 break $label;
             }
@@ -314,8 +320,8 @@ macro_rules! or_break {
 
     ($expr:expr $(,)?) => {
         match $crate::IntoResult::into_result($expr) {
-            Ok(x) => x,
-            Err(e) => {
+            ::core::result::Result::Ok(x) => x,
+            ::core::result::Result::Err(e) => {
                 $crate::__log_on_bail!($expr, e);
                 break;
             }
@@ -330,14 +336,14 @@ macro_rules! or_break {
 macro_rules! or_break_quiet {
     ($label:tt, $expr:expr $(,)?) => {
         match $crate::IntoResult::into_result($expr) {
-            Ok(x) => x,
+            ::core::result::Result::Ok(x) => x,
             _ => break $label,
         }
     };
 
     ($expr:expr $(,)?) => {
         match $crate::IntoResult::into_result($expr) {
-            Ok(x) => x,
+            ::core::result::Result::Ok(x) => x,
             _ => break,
         }
     };
