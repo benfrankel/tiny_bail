@@ -6,7 +6,7 @@
 
 Bailing is an error-handling pattern that takes the middle path between `unwrap` and `?`:
 - Compared to `unwrap`: Bail will `return`, `continue`, or `break` instead of panicking.
-- Compared to `?`: Bail will log or ignore the error instead of propagating it.
+- Compared to `?`: Bail will log or quietly discard the error instead of propagating it.
 
 The middle path avoids unwanted panics without the ergonomic challenges of propagating errors with `?`.
 
@@ -54,17 +54,20 @@ The macros support `Result`, `Option`, and `bool` types out of the box. You can 
 
 To use this crate, add it to your `Cargo.toml`:
 
-```toml
-[dependencies]
-# This will log with `tracing::warn!` by default.
-tiny_bail = "0.5"
-# You can disable the logging backend to fall back to `println!` instead:
-tiny_bail = { version = "0.5", default-features = false }
-# Or you can set a custom backend.
-tiny_bail = { version = "0.5", default-features = false, features = ["log", "info"] }
+```shell
+cargo add tiny_bail
 ```
 
-This crate has zero dependencies other than the logging backend you select (`log`, `tracing`, or nothing).
+You can use features to customize the logging behavior on failure:
+
+```shell
+# Log with `println!` instead of `tracing::warn!`.
+cargo add tiny_bail --no-default-features
+# Log with `log::info!` instead of `tracing::warn!`.
+cargo add tiny_bail --no-default-features --features log,info
+```
+
+This crate has zero dependencies other than the logging backend you choose (`log`, `tracing`, or nothing).
 
 # License
 

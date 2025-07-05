@@ -2,9 +2,30 @@
 //!
 //! Bailing is an error-handling pattern that takes the middle path between `unwrap` and `?`:
 //! - Compared to `unwrap`: Bail will `return`, `continue`, or `break` instead of panicking.
-//! - Compared to `?`: Bail will log or ignore the error instead of propagating it.
+//! - Compared to `?`: Bail will log or quietly discard the error instead of propagating it.
 //!
 //! The middle path avoids unwanted panics without the ergonomic challenges of propagating errors with `?`.
+//!
+//! # Example
+//!
+//! ```rust
+//! use tiny_bail::prelude::*;
+//!
+//! // With `tiny_bail`:
+//! fn increment_last(arr: &mut [i32]) {
+//!     *r!(arr.last_mut()) += 1;
+//! }
+//!
+//! // Without `tiny_bail`:
+//! fn increment_last_manually(arr: &mut [i32]) {
+//!     if let Some(x) = arr.last_mut() {
+//!         *x += 1;
+//!     } else {
+//!         println!("Bailed at src/example.rs:34:18: `arr.last_mut()`");
+//!         return;
+//!     }
+//! }
+//! ```
 //!
 //! # Getting started
 //!
@@ -27,26 +48,22 @@
 //! The macros support [`Result`], [`Option`], and [`bool`] types out of the box.
 //! Implement [`IntoResult`] to extend this to other types.
 //!
-//! # Example
+//! To use this crate, add it to your `Cargo.toml`:
 //!
-//! ```rust
-//! use tiny_bail::prelude::*;
-//!
-//! // With `tiny_bail`:
-//! fn increment_last(arr: &mut [i32]) {
-//!     *r!(arr.last_mut()) += 1;
-//! }
-//!
-//! // Without `tiny_bail`:
-//! fn increment_last_manually(arr: &mut [i32]) {
-//!     if let Some(x) = arr.last_mut() {
-//!         *x += 1;
-//!     } else {
-//!         println!("Bailed at src/example.rs:34:18: `arr.last_mut()`");
-//!         return;
-//!     }
-//! }
+//! ```shell
+//! cargo add tiny_bail
 //! ```
+//!
+//! You can use features to customize the logging behavior on failure:
+//!
+//! ```shell
+//! # Log with `println!` instead of `tracing::warn!`.
+//! cargo add tiny_bail --no-default-features
+//! # Log with `log::info!` instead of `tracing::warn!`.
+//! cargo add tiny_bail --no-default-features --features log,info
+//! ```
+//!
+//! This crate has zero dependencies other than the logging backend you choose (`log`, `tracing`, or nothing).
 
 /// Re-exported macros and tiny aliases.
 ///

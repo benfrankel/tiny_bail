@@ -82,7 +82,8 @@ jobs:
 
       - name: Check documentation
         run: |
-          for backend in '' log tracing; do
+          cargo doc --workspace --no-default-features --document-private-items --no-deps
+          for backend in log tracing; do
             for level in trace debug info warn error; do
               cargo doc --workspace --no-default-features --features "${backend},${level}" --document-private-items --no-deps
             done
@@ -110,10 +111,13 @@ jobs:
 
       - name: Run tests
         run: |
-          for backend in '' log tracing; do
+          cargo test --workspace --no-default-features --all-targets
+          # TODO: Workaround for <https://github.com/rust-lang/cargo/issues/6669>.
+          cargo test --workspace --no-default-features --doc
+          for backend in log tracing; do
             for level in trace debug info warn error; do
               cargo test --workspace --no-default-features --features "${backend},${level}" --all-targets
-              # TODO: Workaround for https://github.com/rust-lang/cargo/issues/6669
+              # TODO: Workaround for <https://github.com/rust-lang/cargo/issues/6669>.
               cargo test --workspace --no-default-features --features "${backend},${level}" --doc
             done
           done
