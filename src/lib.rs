@@ -6,6 +6,25 @@
 //!
 //! The middle path avoids unwanted panics without the ergonomic challenges of propagating errors with `?`.
 //!
+//! This crate provides six macro variants:
+//! - [`or_return!`]
+//! - [`or_return_quiet!`]
+//! - [`or_continue!`]
+//! - [`or_continue_quiet!`]
+//! - [`or_break!`]
+//! - [`or_break_quiet!`]
+//!
+//! Along with their tiny aliases:
+//! [`r!`](prelude::r),
+//! [`rq!`](prelude::rq),
+//! [`c!`](prelude::c),
+//! [`cq!`](prelude::cq),
+//! [`b!`](prelude::b), and
+//! [`bq!`](prelude::bq).
+//!
+//! The macros support [`Result`], [`Option`], and [`bool`] types out of the box.
+//! Implement [`IntoResult`] to extend this to other types.
+//!
 //! # Example
 //!
 //! ```rust
@@ -29,32 +48,13 @@
 //!
 //! # Getting started
 //!
-//! This crate provides six macro variants:
-//! - [`or_return!`]
-//! - [`or_return_quiet!`]
-//! - [`or_continue!`]
-//! - [`or_continue_quiet!`]
-//! - [`or_break!`]
-//! - [`or_break_quiet!`]
-//!
-//! Along with their tiny aliases:
-//! [`r!`](prelude::r),
-//! [`rq!`](prelude::rq),
-//! [`c!`](prelude::c),
-//! [`cq!`](prelude::cq),
-//! [`b!`](prelude::b), and
-//! [`bq!`](prelude::bq).
-//!
-//! The macros support [`Result`], [`Option`], and [`bool`] types out of the box.
-//! Implement [`IntoResult`] to extend this to other types.
-//!
 //! To use this crate, add it to your `Cargo.toml`:
 //!
 //! ```shell
 //! cargo add tiny_bail
 //! ```
 //!
-//! You can use features to customize the logging behavior on failure:
+//! You can set features to customize the logging behavior on failure:
 //!
 //! ```shell
 //! # Log with `println!` instead of `tracing::warn!`.
