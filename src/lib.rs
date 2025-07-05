@@ -94,11 +94,9 @@ pub mod explicit {
     };
 }
 
-// Verify that the log backend feature combination is sane.
+// Require a sane feature combination.
 #[cfg(all(feature = "log", feature = "tracing"))]
 compile_error!("multiple log backend features are set (log, tracing)");
-
-// Verify that the log level feature combination is sane.
 #[cfg(any(
     all(feature = "trace", feature = "debug"),
     all(feature = "trace", feature = "info"),
@@ -112,7 +110,6 @@ compile_error!("multiple log backend features are set (log, tracing)");
     all(feature = "warn", feature = "error"),
 ))]
 compile_error!("multiple log level features are set (trace, debug, info, warn, error)");
-
 #[cfg(all(
     any(feature = "log", feature = "tracing"),
     not(any(
@@ -123,19 +120,32 @@ compile_error!("multiple log level features are set (trace, debug, info, warn, e
         feature = "error",
     )),
 ))]
-compile_error!("a log backend feature is set (log, tracing), but no log level feature is set (trace, debug, info, warn, error)");
+compile_error!(
+    "a log backend feature is set (log, tracing), but no log level feature is set (trace, debug, info, warn, error)",
+);
+#[cfg(all(
+    not(any(feature = "log", feature = "tracing")),
+    any(
+        feature = "trace",
+        feature = "debug",
+        feature = "info",
+        feature = "warn",
+        feature = "error",
+    ),
+))]
+compile_error!(
+    "a log level feature is set (trace, debug, info, warn, error), but no log backend feature is set (log, tracing)",
+);
 
+// Set the log backend.
 #[doc(hidden)]
 pub mod __log_backend {
-    /// Set the log backend to `log`.
     #[cfg(feature = "log")]
     pub use log::{debug, error, info, trace, warn};
-    
-    /// Set the log backend to `tracing`.
-    #[cfg(feature = "log")]
+
+    #[cfg(feature = "tracing")]
     pub use tracing::{debug, error, info, trace, warn};
-    
-    /// Fall back to `println`.
+
     #[cfg(not(any(feature = "log", feature = "tracing")))]
     pub use std::println;
 }
@@ -159,7 +169,7 @@ macro_rules! set_log_level {
             };
         }
 
-        /// Workaround for https://github.com/rust-lang/rust/pull/52234.
+        // Workaround for https://github.com/rust-lang/rust/pull/52234.
         #[doc(hidden)]
         pub use ___log_on_bail as __log_on_bail;
     };
@@ -184,7 +194,9 @@ set_log_level!(error);
 )))]
 set_log_level!(println);
 
-/// An extension trait for separating success and failure values.
+/// A trait for types that can be separated into success and failure values.
+///
+/// This trait is implemented for [`Result`], [`Option`], and [`bool`].
 pub trait IntoResult<T, E> {
     /// Return the success or failure value as a `Result`.
     fn into_result(self) -> Result<T, E>;
@@ -208,9 +220,9 @@ impl<T, E> IntoResult<T, E> for Result<T, E> {
     }
 }
 
-/// Unwrap or return with a warning.
+/// Unwrap on success, or log the failure and return.
 ///
-/// Returns `Default::default()` unless an initial argument is provided to return instead.
+/// Returns [`Default::default()`] unless an initial argument is provided to return instead.
 #[macro_export]
 macro_rules! or_return {
     ($return:expr, $expr:expr $(,)?) => {
@@ -234,9 +246,9 @@ macro_rules! or_return {
     };
 }
 
-/// Unwrap or return quietly.
+/// Unwrap on success, or quietly discard the failure and return.
 ///
-/// Returns `Default::default()` unless an initial argument is provided to return instead.
+/// Returns [`Default::default()`] unless an initial argument is provided to return instead.
 #[macro_export]
 macro_rules! or_return_quiet {
     ($return:expr, $expr:expr $(,)?) => {
@@ -254,7 +266,7 @@ macro_rules! or_return_quiet {
     };
 }
 
-/// Unwrap or continue with a warning.
+/// Unwrap on success, or log the failure and continue.
 ///
 /// Accepts an optional 'label as the first argument.
 #[macro_export]
@@ -280,7 +292,7 @@ macro_rules! or_continue {
     };
 }
 
-/// Unwrap or continue quietly.
+/// Unwrap on success, or quietly discard the failure and continue.
 ///
 /// Accepts an optional 'label as the first argument.
 #[macro_export]
@@ -300,7 +312,7 @@ macro_rules! or_continue_quiet {
     };
 }
 
-/// Unwrap or break with a warning.
+/// Unwrap on success, or log the failure and break.
 ///
 /// Accepts an optional 'label as the first argument.
 #[macro_export]
@@ -326,7 +338,7 @@ macro_rules! or_break {
     };
 }
 
-/// Unwrap or break quietly.
+/// Unwrap on success, or quietly discard the failure and break.
 ///
 /// Accepts an optional 'label as the first argument.
 #[macro_export]

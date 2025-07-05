@@ -10,6 +10,27 @@ Bailing is an error-handling pattern that takes the middle path between `unwrap`
 
 The middle path avoids unwanted panics without the ergonomic challenges of propagating errors with `?`.
 
+# Example
+
+```rust
+use tiny_bail::prelude::*;
+
+// With `tiny_bail`:
+fn increment_last(arr: &mut [i32]) {
+    *r!(arr.last_mut()) += 1;
+}
+
+// Without `tiny_bail`:
+fn increment_last_manually(arr: &mut [i32]) {
+    if let Some(x) = arr.last_mut() {
+        *x += 1;
+    } else {
+        tracing::warn!("Bailed at src/example.rs:34:18: `arr.last_mut()` is `None`");
+        return;
+    }
+}
+```
+
 # Getting started
 
 This crate provides six macro variants:
@@ -31,26 +52,19 @@ Along with their tiny aliases:
 The macros support `Result`, `Option`, and `bool` types out of the box. You can implement
 [`IntoResult`](https://docs.rs/tiny_bail/latest/tiny_bail/trait.IntoResult.html) to extend this to other types.
 
-# Example
+To use this crate, add it to your `Cargo.toml`:
 
-```rust
-use tiny_bail::prelude::*;
-
-// With `tiny_bail`:
-fn increment_last(arr: &mut [i32]) {
-    *r!(arr.last_mut()) += 1;
-}
-
-// Without `tiny_bail`:
-fn increment_last_manually(arr: &mut [i32]) {
-    if let Some(x) = arr.last_mut() {
-        *x += 1;
-    } else {
-        tracing::warn!("Bailed at src/example.rs:34:18: `arr.last_mut()` is `None`");
-        return;
-    }
-}
+```toml
+[dependencies]
+# This will log with `tracing::warn!` by default.
+tiny_bail = "0.5"
+# You can disable the logging backend to fall back to `println!` instead:
+tiny_bail = { version = "0.5", default-features = false }
+# Or you can set a custom backend.
+tiny_bail = { version = "0.5", default-features = false, features = ["log", "info"] }
 ```
+
+This crate has zero dependencies other than the logging backend you select (`log`, `tracing`, or nothing).
 
 # License
 

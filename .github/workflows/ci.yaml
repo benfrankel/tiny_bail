@@ -53,7 +53,8 @@ jobs:
 
       - name: Run Clippy lints
         run: |
-          for backend in '' log tracing; do
+          cargo clippy --workspace --no-default-features --all-targets -- --deny warnings
+          for backend in log tracing; do
             for level in trace debug info warn error; do
               cargo clippy --workspace --no-default-features --features "${backend},${level}" --all-targets -- --deny warnings
             done
