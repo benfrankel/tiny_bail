@@ -113,18 +113,15 @@ compile_error!("multiple log backend features are set (log, tracing)");
 ))]
 compile_error!("multiple log level features are set (trace, debug, info, warn, error)");
 
-#[cfg(not(all(
-    any(
-        feature = "log",
-        feature = "tracing",
-    ),
-    any(
+#[cfg(all(
+    any(feature = "log", feature = "tracing"),
+    not(any(
         feature = "trace",
         feature = "debug",
         feature = "info",
         feature = "warn",
         feature = "error",
-    ),
+    )),
 ))]
 compile_error!("a log backend feature is set (log, tracing), but no log level feature is set (trace, debug, info, warn, error)");
 
