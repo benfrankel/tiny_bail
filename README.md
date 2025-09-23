@@ -10,7 +10,7 @@ Bailing is an error-handling pattern that takes the middle path between `unwrap`
 
 The middle path avoids unwanted panics without the ergonomic challenges of propagating errors with `?`.
 
-This crate provides six macro variants:
+This crate provides the following macro variants:
 - [`or_return!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.or_return.html)
 - [`or_return_quiet!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.or_return_quiet.html)
 - [`or_continue!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.or_continue.html)
@@ -58,7 +58,7 @@ To use this crate, add it to your `Cargo.toml`:
 cargo add tiny_bail
 ```
 
-You can set features to customize the logging behavior on failure:
+You can set features to customize the logging behavior on bail:
 
 ```shell
 # Log with `println!` instead of `tracing::warn!`.

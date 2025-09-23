@@ -6,7 +6,7 @@
 //!
 //! The middle path avoids unwanted panics without the ergonomic challenges of propagating errors with `?`.
 //!
-//! This crate provides six macro variants:
+//! This crate provides the following macro variants:
 //! - [`or_return!`]
 //! - [`or_return_quiet!`]
 //! - [`or_continue!`]
@@ -54,7 +54,7 @@
 //! cargo add tiny_bail
 //! ```
 //!
-//! You can set features to customize the logging behavior on failure:
+//! You can set features to customize the logging behavior on bail:
 //!
 //! ```shell
 //! # Log with `println!` instead of `tracing::warn!`.
@@ -170,10 +170,10 @@ pub mod __log_backend {
 /// Set the log level.
 macro_rules! set_log_level {
     ($level:ident) => {
-        /// Log the position and error of a bail.
+        /// Log the code location, expression, and error on bail.
         #[doc(hidden)]
         #[macro_export]
-        macro_rules! ___log_on_bail {
+        macro_rules! ___log_bail {
             ($expr:expr, $err:expr) => {
                 $crate::__log_backend::$level!(
                     "Bailed at {}:{}:{}: `{}` is `{:?}`",
@@ -186,9 +186,9 @@ macro_rules! set_log_level {
             };
         }
 
-        // Workaround for https://github.com/rust-lang/rust/pull/52234.
+        // Workaround for <https://github.com/rust-lang/rust/pull/52234>.
         #[doc(hidden)]
-        pub use ___log_on_bail as __log_on_bail;
+        pub use ___log_bail as __log_bail;
     };
 }
 
@@ -237,27 +237,72 @@ impl<T, E> IntoResult<T, E> for Result<T, E> {
     }
 }
 
+/// A helper macro to unwrap on success, or log the failure and do something else.
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __unwrap_or {
+    ($expr:expr, $else:expr) => {
+        match $crate::IntoResult::into_result($expr) {
+            ::core::result::Result::Ok(x) => x,
+            ::core::result::Result::Err(__err) => {
+                $crate::__log_bail!($expr, __err);
+                $else;
+            }
+        }
+    };
+}
+
 /// Unwrap on success, or log the failure and return.
 ///
 /// Returns [`Default::default()`] unless an initial argument is provided to return instead.
 #[macro_export]
 macro_rules! or_return {
     ($return:expr, $expr:expr $(,)?) => {
-        match $crate::IntoResult::into_result($expr) {
-            ::core::result::Result::Ok(x) => x,
-            ::core::result::Result::Err(e) => {
-                $crate::__log_on_bail!($expr, e);
-                return $return;
-            }
-        }
+        $crate::__unwrap_or!($expr, return $return)
     };
 
     ($expr:expr $(,)?) => {
+        $crate::__unwrap_or!($expr, return ::core::default::Default::default())
+    };
+}
+
+/// Unwrap on success, or log the failure and continue.
+///
+/// Accepts an optional 'label as the first argument.
+#[macro_export]
+macro_rules! or_continue {
+    ($label:tt, $expr:expr $(,)?) => {
+        $crate::__unwrap_or!($expr, continue $label)
+    };
+
+    ($expr:expr $(,)?) => {
+        $crate::__unwrap_or!($expr, continue)
+    };
+}
+
+/// Unwrap on success, or log the failure and break.
+///
+/// Accepts an optional 'label as the first argument.
+#[macro_export]
+macro_rules! or_break {
+    ($label:tt, $expr:expr $(,)?) => {
+        $crate::__unwrap_or!($expr, break $label)
+    };
+
+    ($expr:expr $(,)?) => {
+        $crate::__unwrap_or!($expr, break)
+    };
+}
+
+/// A helper macro to unwrap on success, or quietly discard the failure and do something else.
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __unwrap_or_quiet {
+    ($expr:expr, $else:expr) => {
         match $crate::IntoResult::into_result($expr) {
             ::core::result::Result::Ok(x) => x,
-            ::core::result::Result::Err(e) => {
-                $crate::__log_on_bail!($expr, e);
-                return ::core::default::Default::default();
+            _ => {
+                $else;
             }
         }
     };
@@ -269,43 +314,11 @@ macro_rules! or_return {
 #[macro_export]
 macro_rules! or_return_quiet {
     ($return:expr, $expr:expr $(,)?) => {
-        match $crate::IntoResult::into_result($expr) {
-            ::core::result::Result::Ok(x) => x,
-            _ => return $return,
-        }
+        $crate::__unwrap_or_quiet!($expr, return $return)
     };
 
     ($expr:expr $(,)?) => {
-        match $crate::IntoResult::into_result($expr) {
-            ::core::result::Result::Ok(x) => x,
-            _ => return ::core::default::Default::default(),
-        }
-    };
-}
-
-/// Unwrap on success, or log the failure and continue.
-///
-/// Accepts an optional 'label as the first argument.
-#[macro_export]
-macro_rules! or_continue {
-    ($label:tt, $expr:expr $(,)?) => {
-        match $crate::IntoResult::into_result($expr) {
-            ::core::result::Result::Ok(x) => x,
-            ::core::result::Result::Err(e) => {
-                $crate::__log_on_bail!($expr, e);
-                continue $label;
-            }
-        }
-    };
-
-    ($expr:expr $(,)?) => {
-        match $crate::IntoResult::into_result($expr) {
-            ::core::result::Result::Ok(x) => x,
-            ::core::result::Result::Err(e) => {
-                $crate::__log_on_bail!($expr, e);
-                continue;
-            }
-        }
+        $crate::__unwrap_or_quiet!($expr, return ::core::default::Default::default())
     };
 }
 
@@ -315,43 +328,11 @@ macro_rules! or_continue {
 #[macro_export]
 macro_rules! or_continue_quiet {
     ($label:tt, $expr:expr $(,)?) => {
-        match $crate::IntoResult::into_result($expr) {
-            ::core::result::Result::Ok(x) => x,
-            _ => continue $label,
-        }
+        $crate::__unwrap_or_quiet!($expr, continue $label)
     };
 
     ($expr:expr $(,)?) => {
-        match $crate::IntoResult::into_result($expr) {
-            ::core::result::Result::Ok(x) => x,
-            _ => continue,
-        }
-    };
-}
-
-/// Unwrap on success, or log the failure and break.
-///
-/// Accepts an optional 'label as the first argument.
-#[macro_export]
-macro_rules! or_break {
-    ($label:tt, $expr:expr $(,)?) => {
-        match $crate::IntoResult::into_result($expr) {
-            ::core::result::Result::Ok(x) => x,
-            ::core::result::Result::Err(e) => {
-                $crate::__log_on_bail!($expr, e);
-                break $label;
-            }
-        }
-    };
-
-    ($expr:expr $(,)?) => {
-        match $crate::IntoResult::into_result($expr) {
-            ::core::result::Result::Ok(x) => x,
-            ::core::result::Result::Err(e) => {
-                $crate::__log_on_bail!($expr, e);
-                break;
-            }
-        }
+        $crate::__unwrap_or_quiet!($expr, continue)
     };
 }
 
@@ -361,17 +342,11 @@ macro_rules! or_break {
 #[macro_export]
 macro_rules! or_break_quiet {
     ($label:tt, $expr:expr $(,)?) => {
-        match $crate::IntoResult::into_result($expr) {
-            ::core::result::Result::Ok(x) => x,
-            _ => break $label,
-        }
+        $crate::__unwrap_or_quiet!($expr, break $label)
     };
 
     ($expr:expr $(,)?) => {
-        match $crate::IntoResult::into_result($expr) {
-            ::core::result::Result::Ok(x) => x,
-            _ => break,
-        }
+        $crate::__unwrap_or_quiet!($expr, break)
     };
 }
 
