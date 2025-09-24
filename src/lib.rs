@@ -364,9 +364,9 @@ macro_rules! __unwrap_or_log_once {
         match $crate::IntoResult::into_result($expr) {
             ::core::result::Result::Ok(x) => x,
             ::core::result::Result::Err(__err) => {
-                static SHOULD_LOG: ::core::sync::atomic::AtomicBool =
+                static __SHOULD_LOG: ::core::sync::atomic::AtomicBool =
                     ::core::sync::atomic::AtomicBool::new(true);
-                if SHOULD_LOG.swap(false, ::core::sync::atomic::Ordering::Relaxed) {
+                if __SHOULD_LOG.swap(false, ::core::sync::atomic::Ordering::Relaxed) {
                     $crate::__log_bail!($expr, __err);
                 }
                 $else;
