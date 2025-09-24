@@ -1,6 +1,6 @@
 [package]
 name = "tiny_bail"
-version = "0.5.0"
+version = "0.6.0"
 authors = ["Ben Frankel"]
 edition = "2024"
 description = "Small but flexible macros for bailing on failure."
