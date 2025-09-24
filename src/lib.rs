@@ -89,17 +89,26 @@ pub mod prelude {
     /// Tiny alias for [`or_return_quiet!`].
     pub use or_return_quiet as rq;
 
+    /// Tiny alias for [`or_return_log_once!`].
+    pub use or_return_quiet as ro;
+
     /// Tiny alias for [`or_continue!`].
     pub use or_continue as c;
 
     /// Tiny alias for [`or_continue_quiet!`].
     pub use or_continue_quiet as cq;
 
+    /// Tiny alias for [`or_continue_log_once!`].
+    pub use or_continue_quiet as co;
+
     /// Tiny alias for [`or_break!`].
     pub use or_break as b;
 
     /// Tiny alias for [`or_break_quiet!`].
     pub use or_break_quiet as bq;
+
+    /// Tiny alias for [`or_break_log_once!`].
+    pub use or_break_quiet as bo;
 }
 
 /// Re-exported macros.
@@ -113,7 +122,8 @@ pub mod prelude {
 /// ```
 pub mod explicit {
     pub use super::{
-        or_break, or_break_quiet, or_continue, or_continue_quiet, or_return, or_return_quiet,
+        or_break, or_break_log_once, or_break_quiet, or_continue, or_continue_log_once,
+        or_continue_quiet, or_return, or_return_log_once, or_return_quiet,
     };
 }
 
