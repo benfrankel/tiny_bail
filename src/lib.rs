@@ -90,7 +90,7 @@ pub mod prelude {
     pub use or_return_quiet as rq;
 
     /// Tiny alias for [`or_return_log_once!`].
-    pub use or_return_quiet as ro;
+    pub use or_return_log_once as ro;
 
     /// Tiny alias for [`or_continue!`].
     pub use or_continue as c;
@@ -99,7 +99,7 @@ pub mod prelude {
     pub use or_continue_quiet as cq;
 
     /// Tiny alias for [`or_continue_log_once!`].
-    pub use or_continue_quiet as co;
+    pub use or_continue_log_once as co;
 
     /// Tiny alias for [`or_break!`].
     pub use or_break as b;
@@ -108,7 +108,7 @@ pub mod prelude {
     pub use or_break_quiet as bq;
 
     /// Tiny alias for [`or_break_log_once!`].
-    pub use or_break_quiet as bo;
+    pub use or_break_log_once as bo;
 }
 
 /// Re-exported macros.
