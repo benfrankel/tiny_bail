@@ -5,26 +5,32 @@
 [![License](https://img.shields.io/badge/license-MIT%2FApache-blue.svg?style=for-the-badge)](https://github.com/benfrankel/tiny_bail)
 
 Bailing is an error-handling pattern that takes the middle path between `unwrap` and `?`:
-- Compared to `unwrap`: Bail will `return`, `continue`, or `break` instead of panicking.
-- Compared to `?`: Bail will log or quietly discard the error instead of propagating it.
+- Compared to `unwrap`: Bailing will `return`, `continue`, or `break` instead of panicking.
+- Compared to `?`: Bailing will log or quietly discard the error instead of returning it.
 
 The middle path avoids unwanted panics without the ergonomic challenges of propagating errors with `?`.
 
-This crate provides the following macro variants:
+This crate provides the following macro variants to determine the preferred behavior on failure:
 - [`or_return!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.or_return.html)
 - [`or_return_quiet!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.or_return_quiet.html)
+- [`or_return_log_once!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.or_return_log_once.html)
 - [`or_continue!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.or_continue.html)
 - [`or_continue_quiet!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.or_continue_quiet.html)
+- [`or_continue_log_once!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.or_continue_log_once.html)
 - [`or_break!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.or_break.html)
 - [`or_break_quiet!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.or_break_quiet.html)
+- [`or_break_log_once!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.or_break_log_once.html)
 
 Along with their tiny aliases:
 [`r!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.r.html),
 [`rq!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.rq.html),
+[`ro!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.ro.html),
 [`c!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.c.html),
 [`cq!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.cq.html),
-[`b!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.b.html), and
-[`bq!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.bq.html).
+[`co!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.co.html),
+[`b!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.b.html),
+[`bq!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.bq.html), and
+[`bo!`](https://docs.rs/tiny_bail/latest/tiny_bail/macro.bo.html).
 
 The macros support `Result`, `Option`, and `bool` types out of the box. You can implement
 [`IntoResult`](https://docs.rs/tiny_bail/latest/tiny_bail/trait.IntoResult.html) to extend this to other types.
